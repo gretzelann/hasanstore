@@ -170,6 +170,32 @@
 
   /* EMPTY */
   .empty-state{padding:32px;text-align:center;color:var(--text3);font-size:13px;}
+
+  /* LOGO */
+  .store-logo{height:44px;width:auto;object-fit:contain;display:block;}
+
+  /* CALCULATOR */
+  .calc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:2000;backdrop-filter:blur(3px);}
+  .calc-modal{background:var(--surface);border-radius:var(--radius-lg);width:300px;box-shadow:0 24px 60px rgba(0,0,0,.18);border:1px solid var(--border);overflow:hidden;}
+  .calc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+  .calc-header span{font-size:14px;font-weight:600;color:var(--text);}
+  .calc-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text3);line-height:1;padding:2px 8px;border-radius:4px;}
+  .calc-close:hover{background:var(--surface2);color:var(--text);}
+  .calc-display{background:#1a1917;padding:16px 18px 12px;text-align:right;}
+  .calc-expr{font-size:12px;color:#888;min-height:18px;margin-bottom:4px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .calc-val{font-size:34px;font-weight:700;color:#fff;letter-spacing:-.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);}
+  .cbtn{padding:18px 10px;font-size:17px;font-weight:500;border:none;cursor:pointer;transition:background .1s;font-family:inherit;user-select:none;}
+  .cbtn:active{filter:brightness(.88);}
+  .cbtn-num{background:var(--surface);color:var(--text);}
+  .cbtn-num:hover{background:var(--surface2);}
+  .cbtn-op{background:#f0ede6;color:#9a5a00;font-weight:600;}
+  .cbtn-op:hover{background:#e6e0d4;}
+  .cbtn-fn{background:#e8e6e0;color:var(--text2);font-size:14px;}
+  .cbtn-fn:hover{background:#dedad2;}
+  .cbtn-eq{background:var(--green);color:#fff;font-weight:700;}
+  .cbtn-eq:hover{background:#155f43;}
+  .cbtn-wide{grid-column:span 2;}
 </style>
 </head>
 <body>
@@ -179,14 +205,17 @@
   <div class="left">
     <div class="topbar">
       <div class="store-name">
-        <div class="store-icon">🏪</div>
-        Hasan Store
+        <img src="logo.png" class="store-logo" alt="Hasan Store" id="store-logo-img">
+        <span id="store-logo-fallback" style="display:none;align-items:center;gap:10px;"><div class="store-icon">🏪</div>Hasan Store</span>
       </div>
-      <div class="tabs">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn" onclick="openCalc()" title="Calculator">🧮 Calc</button>
+        <div class="tabs">
         <button class="tab active" onclick="switchTab('pos')">🛒 POS</button>
         <button class="tab" onclick="switchTab('inventory')">📦 Inventory</button>
         <button class="tab" onclick="switchTab('sales')">📊 Sales</button>
         <button class="tab" onclick="switchTab('promos')">🏷️ Promos</button>
+        </div>
       </div>
     </div>
 
@@ -268,6 +297,41 @@
 </div>
 
 <div class="overlay" id="overlay" style="display:none;"></div>
+
+<div class="calc-overlay" id="calc-overlay" style="display:none;">
+  <div class="calc-modal">
+    <div class="calc-header">
+      <span>🧮 Calculator</span>
+      <button class="calc-close" onclick="closeCalc()">✕</button>
+    </div>
+    <div class="calc-display">
+      <div class="calc-expr" id="calc-expr"></div>
+      <div class="calc-val" id="calc-val">0</div>
+    </div>
+    <div class="calc-grid">
+      <button class="cbtn cbtn-fn" onclick="calcInput('C')">C</button>
+      <button class="cbtn cbtn-fn" onclick="calcInput('pm')">+/−</button>
+      <button class="cbtn cbtn-fn" onclick="calcInput('%')">%</button>
+      <button class="cbtn cbtn-op" onclick="calcInput('/')">÷</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('7')">7</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('8')">8</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('9')">9</button>
+      <button class="cbtn cbtn-op" onclick="calcInput('*')">×</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('4')">4</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('5')">5</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('6')">6</button>
+      <button class="cbtn cbtn-op" onclick="calcInput('-')">−</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('1')">1</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('2')">2</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('3')">3</button>
+      <button class="cbtn cbtn-op" onclick="calcInput('+')">+</button>
+      <button class="cbtn cbtn-num cbtn-wide" onclick="calcInput('0')">0</button>
+      <button class="cbtn cbtn-num" onclick="calcInput('.')">.</button>
+      <button class="cbtn cbtn-eq" onclick="calcInput('=')">=</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -669,8 +733,85 @@ function closeModal(){document.getElementById('overlay').style.display='none';}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
 document.getElementById('overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('calc-overlay').addEventListener('click',function(e){if(e.target===this)closeCalc();});
+
+// CALCULATOR
+let calcDisplay='0',calcExpr='',calcOp=null,calcPrev=null,calcReset=false;
+
+function openCalc(){document.getElementById('calc-overlay').style.display='flex';updateCalcUI();}
+function closeCalc(){document.getElementById('calc-overlay').style.display='none';}
+
+function updateCalcUI(){
+  document.getElementById('calc-val').textContent=calcDisplay;
+  document.getElementById('calc-expr').textContent=calcExpr;
+}
+
+function calcInput(v){
+  if(v==='C'){calcDisplay='0';calcExpr='';calcOp=null;calcPrev=null;calcReset=false;}
+  else if(v==='pm'){if(calcDisplay!=='0')calcDisplay=calcDisplay.startsWith('-')?calcDisplay.slice(1):'-'+calcDisplay;}
+  else if(v==='%'){const n=parseFloat(calcDisplay);calcDisplay=fmtCalc(n/100);}
+  else if(v==='.'){
+    if(calcReset){calcDisplay='0.';calcReset=false;updateCalcUI();return;}
+    if(!calcDisplay.includes('.'))calcDisplay+='.';
+  } else if('0123456789'.includes(v)){
+    if(calcReset||calcDisplay==='0'){calcDisplay=v;calcReset=false;}
+    else if(calcDisplay.replace('-','').length<12)calcDisplay+=v;
+  } else if('+-*/'.includes(v)){
+    const cur=parseFloat(calcDisplay);
+    if(calcOp!==null&&!calcReset){
+      const r=calcOperate(calcPrev,cur,calcOp);
+      calcDisplay=fmtCalc(r);calcPrev=r;
+    } else {calcPrev=cur;}
+    calcExpr=fmtCalc(calcPrev)+' '+calcOpSym(v);
+    calcOp=v;calcReset=true;
+  } else if(v==='='){
+    if(calcOp!==null&&calcPrev!==null){
+      const cur=parseFloat(calcDisplay);
+      const r=calcOperate(calcPrev,cur,calcOp);
+      calcExpr=fmtCalc(calcPrev)+' '+calcOpSym(calcOp)+' '+fmtCalc(cur)+' =';
+      calcDisplay=fmtCalc(r);
+      calcOp=null;calcPrev=null;calcReset=true;
+    }
+  }
+  updateCalcUI();
+}
+
+function calcOperate(a,b,op){
+  if(op==='+')return a+b;
+  if(op==='-')return a-b;
+  if(op==='*')return a*b;
+  if(op==='/')return b===0?NaN:a/b;
+  return b;
+}
+function calcOpSym(op){return op==='*'?'×':op==='/'?'÷':op;}
+function fmtCalc(n){
+  if(!isFinite(n)||isNaN(n))return 'Error';
+  const s=parseFloat(n.toPrecision(10));
+  return String(s);
+}
+
+document.addEventListener('keydown',function(e){
+  if(document.getElementById('calc-overlay').style.display==='none')return;
+  if('0123456789'.includes(e.key)){calcInput(e.key);e.preventDefault();}
+  else if(e.key==='.'){calcInput('.');e.preventDefault();}
+  else if(e.key==='+'||e.key==='-'||e.key==='*'||e.key==='/'){calcInput(e.key);e.preventDefault();}
+  else if(e.key==='Enter'||e.key==='='){calcInput('=');e.preventDefault();}
+  else if(e.key==='Backspace'){
+    if(calcDisplay.length>1&&calcDisplay!=='-0')calcDisplay=calcDisplay.slice(0,-1);
+    else calcDisplay='0';
+    updateCalcUI();e.preventDefault();
+  } else if(e.key==='Escape'){closeCalc();}
+});
 
 // INIT
+// Logo fallback if logo.png is not found
+const _logoImg=document.getElementById('store-logo-img');
+if(_logoImg)_logoImg.onerror=function(){
+  this.style.display='none';
+  const fb=document.getElementById('store-logo-fallback');
+  if(fb)fb.style.display='flex';
+};
+
 renderCats();
 renderProducts();
 renderCart();
