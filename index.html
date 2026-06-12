@@ -132,18 +132,21 @@
   .btn-clearcart:hover{background:var(--surface2);}
 
   /* RESTOCK ALERT */
-  .restock-wrap{margin:14px 20px 0;border-radius:var(--radius);border:1px solid #e8c040;overflow:hidden;flex-shrink:0;}
-  .restock-head{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:#fffbe8;cursor:pointer;user-select:none;}
+  .restock-wrap{margin:14px 20px 0;border-radius:var(--radius);border:1px solid #e8c040;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column;}
+  .restock-head{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:#fffbe8;cursor:grab;user-select:none;}
+  .restock-head:active{cursor:grabbing;}
   .restock-title{font-size:13px;font-weight:600;color:#8a5c00;display:flex;align-items:center;gap:8px;}
   .restock-count{background:#f0c040;color:#5a3c00;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
   .restock-chevron{color:#8a5c00;font-size:12px;transition:transform .2s;}
-  .restock-body{background:#fffdf0;border-top:1px solid #f0dc80;}
+  .restock-body{background:#fffdf0;border-top:1px solid #f0dc80;overflow-y:auto;}
   .restock-item{display:flex;align-items:center;padding:9px 16px;border-bottom:1px solid #f5ecb0;gap:10px;}
   .restock-item:last-child{border-bottom:none;}
   .restock-info{flex:1;min-width:0;}
   .restock-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .restock-cat{font-size:11px;color:var(--text3);margin-top:1px;}
   .restock-suggest{background:#fff3cd;border:1px solid #f0c040;border-radius:var(--radius-sm);padding:4px 10px;font-size:12px;font-weight:600;color:#7a4f00;white-space:nowrap;}
+  .restock-drag-handle{height:10px;background:#f5e880;border-top:1px solid #e0cc50;cursor:ns-resize;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .restock-drag-handle::after{content:'';display:block;width:36px;height:3px;border-radius:3px;background:#c8a030;box-shadow:0 -4px 0 #c8a030,0 4px 0 #c8a030;}
 
   /* BUTTONS */
   .btn{padding:7px 14px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;background:var(--surface);color:var(--text);transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
@@ -747,12 +750,15 @@ function showReceipt(txn){
 
 const RESTOCK_TARGET=20;
 let restockOpen=true;
+let restockBodyH=null;
 
 function toggleRestock(){
   restockOpen=!restockOpen;
   const body=document.getElementById('rb');
   const chev=document.getElementById('rc');
+  const handle=document.getElementById('rdh');
   if(body)body.style.display=restockOpen?'block':'none';
+  if(handle)handle.style.display=restockOpen?'flex':'none';
   if(chev)chev.style.transform=restockOpen?'':'rotate(-90deg)';
 }
 
@@ -774,6 +780,7 @@ function renderRestockAlert(){
       <div class="restock-suggest">Buy ${suggest}</div>
     </div>`;
   }).join('');
+  const bodyH=restockBodyH?`max-height:${restockBodyH}px;overflow-y:auto;`:'';
   el.innerHTML=`<div class="restock-wrap">
     <div class="restock-head" onclick="toggleRestock()">
       <div class="restock-title">
@@ -782,8 +789,32 @@ function renderRestockAlert(){
       </div>
       <span id="rc" class="restock-chevron" style="transform:${restockOpen?'':'rotate(-90deg)'}">▼</span>
     </div>
-    <div class="restock-body" id="rb" style="display:${restockOpen?'block':'none'};">${rows}</div>
+    <div class="restock-body" id="rb" style="display:${restockOpen?'block':'none'};${bodyH}">${rows}</div>
+    <div class="restock-drag-handle" id="rdh" style="display:${restockOpen?'flex':'none'};" onmousedown="startRestockDrag(event)"></div>
   </div>`;
+}
+
+function startRestockDrag(e){
+  e.preventDefault();
+  e.stopPropagation();
+  const body=document.getElementById('rb');
+  if(!body)return;
+  const startY=e.clientY;
+  const startH=body.offsetHeight||120;
+  document.body.style.cursor='ns-resize';
+  function onMove(ev){
+    const dy=ev.clientY-startY;
+    restockBodyH=Math.max(60,startH+dy);
+    body.style.maxHeight=restockBodyH+'px';
+    body.style.overflowY='auto';
+  }
+  function onUp(){
+    document.body.style.cursor='';
+    document.removeEventListener('mousemove',onMove);
+    document.removeEventListener('mouseup',onUp);
+  }
+  document.addEventListener('mousemove',onMove);
+  document.addEventListener('mouseup',onUp);
 }
 
 function renderInv(){
