@@ -187,6 +187,31 @@
   .sitem-total-row{display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--text);}
   .disc-badge{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px;background:var(--green-bg);color:var(--green);margin-left:6px;vertical-align:middle;}
 
+  /* SALES STATS */
+  .stats-section{padding:14px 20px 4px;}
+  .stats-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+  .stats-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .stats-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;}
+  .stats-block-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;}
+  .stats-rank-row{display:flex;align-items:center;gap:5px;padding:3px 0;font-size:11.5px;border-bottom:1px solid var(--border);}
+  .stats-rank-row:last-child{border-bottom:none;}
+  .rank-medal{font-size:12px;width:18px;text-align:center;flex-shrink:0;}
+  .rank-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
+  .rank-qty{color:var(--text3);font-size:10.5px;white-space:nowrap;padding:0 4px;}
+  .rank-val{font-weight:600;font-size:11.5px;white-space:nowrap;color:var(--blue);}
+  .stats-cat-row{display:flex;align-items:center;gap:7px;padding:4px 0;font-size:11.5px;}
+  .cat-label{min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text2);}
+  .cat-bar-bg{flex:1;background:var(--border);border-radius:3px;height:6px;overflow:hidden;}
+  .cat-bar-fill{height:100%;border-radius:3px;background:var(--blue);min-width:2px;}
+  .cat-pct{width:28px;text-align:right;font-size:10px;color:var(--text3);}
+  .cat-amt{width:66px;text-align:right;font-weight:600;font-size:11px;}
+  .stats-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+  .stats-sum-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:9px 10px;}
+  .stats-sum-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+  .stats-sum-val{font-size:14px;font-weight:700;color:var(--text);}
+  .stats-txn-header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px 8px;border-top:1px solid var(--border);margin-top:6px;}
+  .stats-txn-label{font-size:13px;font-weight:600;}
+
   /* MODAL */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(2px);}
   .modal{background:var(--surface);border-radius:var(--radius-lg);padding:26px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.15);border:1px solid var(--border);}
@@ -323,11 +348,6 @@
       </div>
       <!-- Period summary cards -->
       <div class="metrics-period" id="period-metrics"></div>
-      <!-- Transaction list -->
-      <div class="pane-header" style="padding-top:14px;padding-bottom:10px;">
-        <span class="pane-title" id="period-title">Today's transactions</span>
-        <button class="btn btn-red" onclick="clearSales()">🗑 Clear history</button>
-      </div>
       <div style="flex:1;overflow-y:auto;" id="sales-list"></div>
     </div>
 
@@ -939,7 +959,6 @@ function renderSalesPeriod(){
   const rev=filtered.reduce((s,x)=>s+x.total,0);
   const label=periodLabel(salesPeriod);
 
-  document.getElementById('period-title').textContent=`${label.replace("'s",'')} transactions`;
   document.getElementById('period-metrics').innerHTML=`
     <div class="mcard mcard-accent" style="grid-column:span 2;">
       <div class="mlabel">${label} revenue</div>
@@ -952,7 +971,81 @@ function renderSalesPeriod(){
 
   const el=document.getElementById('sales-list');
   if(!filtered.length){el.innerHTML=`<div class="empty-state">No transactions ${salesPeriod==='day'?'today':salesPeriod==='week'?'this week':salesPeriod==='month'?'this month':'this year'}.</div>`;return;}
-  el.innerHTML=filtered.map(s=>{
+
+  /* ── STATS ── */
+  // Aggregate by item
+  const itemMap={};
+  filtered.forEach(txn=>txn.items.forEach(i=>{
+    const key=(i.isService?'s':'p')+'_'+(i.id||i.name);
+    if(!itemMap[key])itemMap[key]={name:i.name,cat:i.category,isSvc:i.isService,qty:0,rev:0};
+    itemMap[key].qty+=i.qty;
+    itemMap[key].rev+=i.price*i.qty;
+  }));
+  const allItems=Object.values(itemMap);
+  const topQty=[...allItems].sort((a,b)=>b.qty-a.qty).slice(0,5);
+  const topRev=[...allItems].sort((a,b)=>b.rev-a.rev).slice(0,5);
+
+  // Aggregate by category
+  const catMap={};
+  filtered.forEach(txn=>txn.items.forEach(i=>{
+    const c=i.isService?'Services':(i.category||'Other');
+    if(!catMap[c])catMap[c]={rev:0,qty:0};
+    catMap[c].rev+=i.price*i.qty;catMap[c].qty+=i.qty;
+  }));
+  const totalItemRev=Object.values(catMap).reduce((s,c)=>s+c.rev,0);
+  const topCats=Object.entries(catMap).sort((a,b)=>b[1].rev-a[1].rev).slice(0,6);
+
+  const medals=['🥇','🥈','🥉','4.','5.'];
+  const mkRank=(arr)=>arr.map((it,i)=>`
+    <div class="stats-rank-row">
+      <span class="rank-medal">${medals[i]}</span>
+      <span class="rank-name">${it.isSvc?'🔧':(catIcon(it.cat)||'📦')} ${it.name}</span>
+      <span class="rank-qty">${it.qty} pc${it.qty!==1?'s':''}</span>
+      <span class="rank-val">${fmt(it.rev)}</span>
+    </div>`).join('');
+
+  const catRows=topCats.map(([cat,d])=>{
+    const pct=totalItemRev>0?Math.round(d.rev/totalItemRev*100):0;
+    const cObj=CATS.find(c=>c.name===cat);
+    const icon=cObj?cObj.icon:(cat==='Services'?'🔧':'📦');
+    return `<div class="stats-cat-row">
+      <span class="cat-label">${icon} ${cat}</span>
+      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
+      <span class="cat-pct">${pct}%</span>
+      <span class="cat-amt">${fmt(d.rev)}</span>
+    </div>`;
+  }).join('');
+
+  const avgTxn=rev/filtered.length;
+  const highTxn=Math.max(...filtered.map(x=>x.total));
+  const totalPcs=filtered.reduce((a,x)=>a+x.items.reduce((b,i)=>b+i.qty,0),0);
+
+  const statsHTML=`<div class="stats-section">
+    <div class="stats-section-title">📊 ${label.replace("'s",'')} Statistics</div>
+    <div class="stats-grid2">
+      <div class="stats-block">
+        <div class="stats-block-title">📦 Most Sold (by qty)</div>
+        ${mkRank(topQty)||'<div style="font-size:11px;color:var(--text3)">No data</div>'}
+      </div>
+      <div class="stats-block">
+        <div class="stats-block-title">💰 Top by Revenue</div>
+        ${mkRank(topRev)||'<div style="font-size:11px;color:var(--text3)">No data</div>'}
+      </div>
+    </div>
+    <div class="stats-block" style="margin-bottom:10px;">
+      <div class="stats-block-title">🏷️ Sales by Category</div>
+      ${catRows||'<div style="font-size:11px;color:var(--text3)">No data</div>'}
+    </div>
+    <div class="stats-summary-grid">
+      <div class="stats-sum-card"><div class="stats-sum-lbl">Avg transaction</div><div class="stats-sum-val">${fmt(avgTxn)}</div></div>
+      <div class="stats-sum-card"><div class="stats-sum-lbl">Highest transaction</div><div class="stats-sum-val">${fmt(highTxn)}</div></div>
+      <div class="stats-sum-card"><div class="stats-sum-lbl">Pieces sold</div><div class="stats-sum-val">${totalPcs}</div></div>
+      <div class="stats-sum-card"><div class="stats-sum-lbl">Product types</div><div class="stats-sum-val">${allItems.length}</div></div>
+    </div>
+  </div>`;
+
+  /* ── TRANSACTION LIST ── */
+  const txnHTML=filtered.map(s=>{
     const itemRows=s.items.map(i=>{
       const lineTotal=i.price*i.qty;
       const icon=i.isService?'🔧':(catIcon(i.category)||'');
@@ -980,6 +1073,13 @@ function renderSalesPeriod(){
       </div>
     </div>`;
   }).join('');
+
+  el.innerHTML=`${statsHTML}
+    <div class="stats-txn-header">
+      <span class="stats-txn-label">${label.replace("'s",'')} Transactions</span>
+      <button class="btn btn-red" onclick="clearSales()" style="font-size:11px;padding:5px 10px;">🗑 Clear</button>
+    </div>
+    ${txnHTML}`;
 }
 
 function renderPromos(){
