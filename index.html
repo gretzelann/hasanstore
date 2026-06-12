@@ -91,9 +91,27 @@
   .qn{font-size:13px;font-weight:600;min-width:18px;text-align:center;}
   .ctot{font-size:13px;font-weight:600;color:var(--text);min-width:62px;text-align:right;}
 
+  /* DISCOUNT */
+  .disc-wrap{padding:12px 14px;border-top:1px solid var(--border);}
+  .disc-head{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+  .disc-tabs{display:flex;gap:4px;margin-bottom:8px;}
+  .dtab{flex:1;padding:5px;font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;background:transparent;color:var(--text2);transition:all .15s;text-align:center;}
+  .dtab.active{background:var(--green-bg);color:var(--green);border-color:var(--green-light);}
+  .disc-row{display:flex;gap:6px;}
+  .disc-row input{flex:1;padding:7px 10px;font-size:13px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);outline:none;}
+  .disc-row input:focus{border-color:var(--green);}
+  .disc-quick{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;}
+  .dqbtn{padding:3px 10px;font-size:11px;font-weight:500;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s;}
+  .dqbtn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+  .disc-applied{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--green-bg);border-radius:var(--radius-sm);border:1px solid var(--green-light);}
+  .da-text{flex:1;font-size:12px;font-weight:600;color:var(--green);}
+  .da-remove{background:none;border:none;cursor:pointer;color:var(--green);font-size:16px;line-height:1;padding:0;}
+
   /* FOOTER */
   .cart-foot{padding:14px 18px;border-top:1px solid var(--border);}
-  .sum-total{display:flex;justify-content:space-between;font-size:18px;font-weight:700;color:var(--text);padding:4px 0;}
+  .sum-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:5px;}
+  .sum-disc{color:var(--green);font-weight:500;}
+  .sum-total{display:flex;justify-content:space-between;font-size:17px;font-weight:700;color:var(--text);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
   .btn-checkout{width:100%;margin-top:12px;padding:12px;font-size:14px;font-weight:600;background:var(--green);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;transition:all .15s;letter-spacing:.2px;}
   .btn-checkout:hover:not(:disabled){background:#155f43;}
   .btn-checkout:disabled{background:var(--surface2);color:var(--text3);cursor:not-allowed;}
@@ -118,6 +136,7 @@
   .sitem:hover{background:var(--surface2);}
   .sitem-top{display:flex;justify-content:space-between;font-size:13px;font-weight:500;}
   .sitem-sub{font-size:11px;color:var(--text3);margin-top:3px;}
+  .disc-badge{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px;background:var(--green-bg);color:var(--green);margin-left:6px;vertical-align:middle;}
 
   /* MODAL */
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(2px);}
@@ -269,7 +288,21 @@
   <div class="right">
     <div class="cart-head">🧾 Current order</div>
     <div class="cart-body" id="cart-body"></div>
+
+    <div class="disc-wrap">
+      <div class="disc-head">Discount</div>
+      <div class="disc-tabs">
+        <button class="dtab active" id="dt-percent" onclick="setDiscMode('percent')">% Percent</button>
+        <button class="dtab" id="dt-fixed" onclick="setDiscMode('fixed')">₱ Fixed</button>
+        <button class="dtab" id="dt-code" onclick="setDiscMode('code')">🏷 Code</button>
+      </div>
+      <div id="disc-input"></div>
+      <div id="disc-applied"></div>
+    </div>
+
     <div class="cart-foot">
+      <div class="sum-row"><span>Subtotal</span><span id="subtotal">₱0.00</span></div>
+      <div class="sum-row sum-disc" id="disc-row" style="display:none;"><span id="disc-lbl">Discount</span><span id="disc-amt">-₱0.00</span></div>
       <div class="sum-total"><span>Total</span><span id="total">₱0.00</span></div>
       <button class="btn-checkout" id="btn-co" onclick="checkout()" disabled>Checkout</button>
       <button class="btn-clearcart" onclick="clearCart()">Clear order</button>
@@ -385,9 +418,11 @@ let editId=null,editPromoId=null;
 let nextId=ld('hs_nid',DEFAULT_PRODUCTS.length+1);
 let nextPid=ld('hs_npid',DEFAULT_PROMOS.length+1);
 let activeCat='All';
+let discMode='percent';
+let appliedDisc=null;
 
 const fmt=n=>'₱'+Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
-const ts=()=>new Date().toLocaleString('en-PH',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+const ts=()=>new Date().toLocaleString('en-PH',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 const cats=()=>[...new Set(products.map(p=>p.category))];
 
 function catIcon(name){const c=CATS.find(x=>x.name===name);return c?c.icon:'📦';}
@@ -444,11 +479,26 @@ function chQty(id,d){
   renderCart();
 }
 
+function calcDisc(sub){
+  if(!appliedDisc)return 0;
+  if(appliedDisc.type==='percent')return Math.min(sub,sub*appliedDisc.value/100);
+  return Math.min(sub,appliedDisc.value);
+}
+
 function renderCart(){
   const el=document.getElementById('cart-body');
-  const tot=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const da=calcDisc(sub);
+  const tot=Math.max(0,sub-da);
+  document.getElementById('subtotal').textContent=fmt(sub);
   document.getElementById('total').textContent=fmt(tot);
   document.getElementById('btn-co').disabled=!cart.length;
+  const dr=document.getElementById('disc-row');
+  if(appliedDisc&&da>0){
+    dr.style.display='flex';
+    document.getElementById('disc-lbl').textContent=appliedDisc.label;
+    document.getElementById('disc-amt').textContent='-'+fmt(da);
+  } else dr.style.display='none';
   if(!cart.length){el.innerHTML=`<div class="cart-empty"><div class="cart-empty-icon">🛒</div><span>No items added yet</span></div>`;return;}
   el.innerHTML=cart.map(i=>`<div class="citem">
     <div class="cname"><div class="cn">${i.name}</div><div class="cp">${fmt(i.price)} each</div></div>
@@ -461,19 +511,78 @@ function renderCart(){
   </div>`).join('');
 }
 
-function clearCart(){cart=[];renderCart();}
+function clearCart(){cart=[];appliedDisc=null;renderCart();renderDiscInput();}
+
+function setDiscMode(m){
+  discMode=m;
+  ['percent','fixed','code'].forEach(x=>document.getElementById('dt-'+x).classList.toggle('active',x===m));
+  renderDiscInput();
+}
+
+function renderDiscInput(){
+  const ia=document.getElementById('disc-input');
+  const aa=document.getElementById('disc-applied');
+  if(appliedDisc){
+    ia.innerHTML='';
+    aa.innerHTML=`<div class="disc-applied"><span class="da-text">🏷 ${appliedDisc.label}</span><button class="da-remove" onclick="removeDisc()">✕</button></div>`;
+    return;
+  }
+  aa.innerHTML='';
+  if(discMode==='percent'){
+    ia.innerHTML=`<div class="disc-row"><input type="number" id="dv" placeholder="Enter %" min="0" max="100"/><button class="btn btn-green" onclick="applyManual()" style="white-space:nowrap;padding:7px 12px;">Apply</button></div>
+    <div class="disc-quick"><span style="font-size:11px;color:var(--text3);align-self:center;">Quick:</span>
+      <button class="dqbtn" onclick="applyQP(5)">5%</button>
+      <button class="dqbtn" onclick="applyQP(10)">10%</button>
+      <button class="dqbtn" onclick="applyQP(15)">15%</button>
+      <button class="dqbtn" onclick="applyQP(20)">20%</button>
+      <button class="dqbtn" onclick="applyQP(50)">50%</button>
+    </div>`;
+  } else if(discMode==='fixed'){
+    ia.innerHTML=`<div class="disc-row"><input type="number" id="dv" placeholder="Enter ₱ amount" min="0"/><button class="btn btn-green" onclick="applyManual()" style="white-space:nowrap;padding:7px 12px;">Apply</button></div>
+    <div class="disc-quick"><span style="font-size:11px;color:var(--text3);align-self:center;">Quick:</span>
+      <button class="dqbtn" onclick="applyQF(10)">₱10</button>
+      <button class="dqbtn" onclick="applyQF(20)">₱20</button>
+      <button class="dqbtn" onclick="applyQF(50)">₱50</button>
+      <button class="dqbtn" onclick="applyQF(100)">₱100</button>
+    </div>`;
+  } else {
+    const hint=promos.length?`Active: ${promos.map(p=>`<strong>${p.code}</strong>`).join(', ')}`:'No promo codes yet.';
+    ia.innerHTML=`<div class="disc-row"><input type="text" id="dc" placeholder="Enter promo code" oninput="this.value=this.value.toUpperCase()"/><button class="btn btn-green" onclick="applyCode()" style="white-space:nowrap;padding:7px 12px;">Apply</button></div>
+    <div style="margin-top:6px;font-size:11px;color:var(--text3);">${hint}</div>`;
+  }
+}
+
+function applyManual(){
+  const v=parseFloat(document.getElementById('dv').value);
+  if(isNaN(v)||v<=0){toast('Enter a valid value.');return;}
+  if(discMode==='percent'&&v>100){toast('Max 100%.');return;}
+  appliedDisc={type:discMode,value:v,label:discMode==='percent'?`${v}% discount`:`₱${v.toFixed(2)} off`};
+  renderDiscInput();renderCart();toast('Discount applied!');
+}
+function applyQP(v){appliedDisc={type:'percent',value:v,label:`${v}% discount`};renderDiscInput();renderCart();toast(`${v}% discount applied!`);}
+function applyQF(v){appliedDisc={type:'fixed',value:v,label:`₱${v} off`};renderDiscInput();renderCart();toast(`₱${v} discount applied!`);}
+function applyCode(){
+  const code=(document.getElementById('dc').value||'').trim().toUpperCase();
+  const p=promos.find(x=>x.code===code);
+  if(!p){toast('Invalid promo code.');return;}
+  appliedDisc={type:p.type,value:p.value,label:`${p.code}: ${p.description}`};
+  renderDiscInput();renderCart();toast('Promo code applied!');
+}
+function removeDisc(){appliedDisc=null;renderDiscInput();renderCart();}
 
 function checkout(){
   if(!cart.length)return;
-  const tot=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const da=calcDisc(sub);
+  const tot=Math.max(0,sub-da);
   const items=cart.map(i=>({...i}));
   items.forEach(i=>{const p=products.find(x=>x.id===i.id);if(p)p.stock-=i.qty;});
   sv('hs_products',products);
-  const txn={id:Date.now(),time:ts(),items,total:tot};
+  const txn={id:Date.now(),time:ts(),items,subtotal:sub,discAmt:da,discount:appliedDisc?{...appliedDisc}:null,total:tot};
   sales.unshift(txn);sv('hs_sales',sales);
   showReceipt(txn);
-  cart=[];
-  renderCart();renderProducts();
+  cart=[];appliedDisc=null;
+  renderCart();renderDiscInput();renderProducts();
 }
 
 function showReceipt(txn){
@@ -488,10 +597,15 @@ function showReceipt(txn){
     <text x="100" y="140" font-family="Fredoka One,Arial Black,sans-serif" font-size="50" font-weight="900" fill="#1B4DBF" stroke="white" stroke-width="7" stroke-linejoin="round" text-anchor="middle" paint-order="stroke fill">HASAN</text>
     <text x="100" y="170" font-family="Fredoka One,Arial Black,sans-serif" font-size="26" font-weight="700" letter-spacing="3" fill="#1B4DBF" stroke="white" stroke-width="5" stroke-linejoin="round" text-anchor="middle" paint-order="stroke fill">STORE</text>
   </svg>`;
+  const discLine=txn.discAmt>0
+    ?`<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text2);padding:3px 0;"><span>Subtotal</span><span>${fmt(txn.subtotal)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--green);font-weight:600;padding:3px 0;"><span>${txn.discount?txn.discount.label:'Discount'}</span><span>-${fmt(txn.discAmt)}</span></div>`
+    :'';
   openModal(`<div class="modal receipt">
     <div class="rhead"><div class="rlogo">${logoSvg}</div><div class="rdate">${txn.time}</div></div>
     <div class="rrows">${rows}</div>
-    <hr class="rdivider" />
+    <hr style="border:none;border-top:1px dashed var(--border2);margin:10px 0;" />
+    ${discLine}
     <div class="rtotal"><span>TOTAL</span><span>${fmt(txn.total)}</span></div>
     <div class="rthanks">Thank you for shopping at Hasan Store! 😊</div>
     <div class="mactions" style="margin-top:18px;"><button class="btn btn-green" style="width:100%;justify-content:center;padding:10px;" onclick="closeModal()">✓ Done</button></div>
@@ -562,8 +676,8 @@ function delProd(id){
 function renderSales(){
   const tr=sales.reduce((s,x)=>s+x.total,0);
   const tt=sales.length;
-  const today=new Date().toLocaleDateString('en-PH',{month:'short',day:'numeric'});
-  const ts2=sales.filter(x=>x.time.startsWith(today));
+  const now=new Date();
+  const ts2=sales.filter(x=>{const d=new Date(x.id);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()&&d.getDate()===now.getDate();});
   const tr2=ts2.reduce((s,x)=>s+x.total,0);
   document.getElementById('metrics').innerHTML=`
     <div class="mcard"><div class="mlabel">Total revenue</div><div class="mval">${fmt(tr)}</div></div>
@@ -574,10 +688,10 @@ function renderSales(){
   if(!sales.length){el.innerHTML=`<div class="empty-state">No sales yet.</div>`;return;}
   el.innerHTML=sales.map(s=>`<div class="sitem" onclick="showReceiptDetail(${s.id})">
     <div class="sitem-top">
-      <span>${fmt(s.total)}</span>
+      <span>${fmt(s.total)}${s.discAmt>0?`<span class="disc-badge">-${fmt(s.discAmt)}</span>`:''}</span>
       <span style="color:var(--text3);font-weight:400;">${s.time}</span>
     </div>
-    <div class="sitem-sub">${s.items.length} item type(s) · ${s.items.reduce((a,i)=>a+i.qty,0)} pcs</div>
+    <div class="sitem-sub">${s.items.length} item type(s) · ${s.items.reduce((a,i)=>a+i.qty,0)} pcs${s.discount?' · '+s.discount.label:''}</div>
   </div>`).join('');
 }
 
@@ -722,6 +836,7 @@ document.addEventListener('keydown',function(e){
 renderCats();
 renderProducts();
 renderCart();
+renderDiscInput();
 </script>
 </body>
 </html>
