@@ -131,6 +131,20 @@
   .btn-clearcart{width:100%;margin-top:6px;padding:8px;font-size:13px;font-weight:500;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;color:var(--text2);transition:all .15s;}
   .btn-clearcart:hover{background:var(--surface2);}
 
+  /* RESTOCK ALERT */
+  .restock-wrap{margin:14px 20px 0;border-radius:var(--radius);border:1px solid #e8c040;overflow:hidden;flex-shrink:0;}
+  .restock-head{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:#fffbe8;cursor:pointer;user-select:none;}
+  .restock-title{font-size:13px;font-weight:600;color:#8a5c00;display:flex;align-items:center;gap:8px;}
+  .restock-count{background:#f0c040;color:#5a3c00;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;}
+  .restock-chevron{color:#8a5c00;font-size:12px;transition:transform .2s;}
+  .restock-body{background:#fffdf0;border-top:1px solid #f0dc80;}
+  .restock-item{display:flex;align-items:center;padding:9px 16px;border-bottom:1px solid #f5ecb0;gap:10px;}
+  .restock-item:last-child{border-bottom:none;}
+  .restock-info{flex:1;min-width:0;}
+  .restock-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .restock-cat{font-size:11px;color:var(--text3);margin-top:1px;}
+  .restock-suggest{background:#fff3cd;border:1px solid #f0c040;border-radius:var(--radius-sm);padding:4px 10px;font-size:12px;font-weight:600;color:#7a4f00;white-space:nowrap;}
+
   /* BUTTONS */
   .btn{padding:7px 14px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;background:var(--surface);color:var(--text);transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
   .btn:hover{background:var(--surface2);border-color:var(--border2);}
@@ -271,11 +285,12 @@
 
     <!-- INVENTORY PANE -->
     <div class="pane" id="pane-inventory" style="background:var(--bg);">
-      <div class="pane-header">
+      <div class="pane-header" style="padding-bottom:0;">
         <span class="pane-title">Inventory</span>
         <button class="btn btn-green" onclick="openAddProduct()">+ Add product</button>
       </div>
-      <div class="tbl-wrap">
+      <div id="restock-alert"></div>
+      <div class="tbl-wrap" style="padding-top:14px;">
         <table>
           <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th></th></tr></thead>
           <tbody id="inv-tbody"></tbody>
@@ -730,7 +745,49 @@ function showReceipt(txn){
   toast('Sale recorded!');
 }
 
+const RESTOCK_TARGET=20;
+let restockOpen=true;
+
+function toggleRestock(){
+  restockOpen=!restockOpen;
+  const body=document.getElementById('rb');
+  const chev=document.getElementById('rc');
+  if(body)body.style.display=restockOpen?'block':'none';
+  if(chev)chev.style.transform=restockOpen?'':'rotate(-90deg)';
+}
+
+function renderRestockAlert(){
+  const el=document.getElementById('restock-alert');
+  const low=products.filter(p=>p.stock<=5).sort((a,b)=>a.stock-b.stock);
+  if(!low.length){el.innerHTML='';return;}
+  const rows=low.map(p=>{
+    const badge=p.stock<=0
+      ?`<span class="sbadge sout">Out of stock</span>`
+      :`<span class="sbadge slow">${p.stock} left</span>`;
+    const suggest=Math.max(1,RESTOCK_TARGET-p.stock);
+    return `<div class="restock-item">
+      <div class="restock-info">
+        <div class="restock-name">${p.name}</div>
+        <div class="restock-cat">${catIcon(p.category)} ${p.category}</div>
+      </div>
+      ${badge}
+      <div class="restock-suggest">Buy ${suggest}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML=`<div class="restock-wrap">
+    <div class="restock-head" onclick="toggleRestock()">
+      <div class="restock-title">
+        ⚠️ Restock needed
+        <span class="restock-count">${low.length} item${low.length>1?'s':''}</span>
+      </div>
+      <span id="rc" class="restock-chevron" style="transform:${restockOpen?'':'rotate(-90deg)'}">▼</span>
+    </div>
+    <div class="restock-body" id="rb" style="display:${restockOpen?'block':'none'};">${rows}</div>
+  </div>`;
+}
+
 function renderInv(){
+  renderRestockAlert();
   document.getElementById('inv-tbody').innerHTML=products.map(p=>{
     const sc=p.stock<=0?'sout':p.stock<=5?'slow':'sok';
     return `<tr>
