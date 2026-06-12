@@ -58,6 +58,19 @@
   .slow{background:var(--amber-bg);color:var(--amber);}
   .sout{background:var(--red-bg);color:var(--red);}
 
+  /* SERVICES */
+  .svc-grid{flex:1;overflow-y:auto;padding:0 20px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;align-content:start;}
+  .svc-grid::-webkit-scrollbar{width:4px;}
+  .svc-grid::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+  .svc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 12px 14px;cursor:pointer;transition:all .15s;user-select:none;text-align:center;}
+  .svc-card:hover{border-color:var(--blue);box-shadow:var(--shadow);transform:translateY(-1px);}
+  .svc-card:active{transform:translateY(0);}
+  .svc-icon{font-size:30px;margin-bottom:8px;line-height:1;}
+  .svc-name{font-size:13px;font-weight:500;color:var(--text);line-height:1.3;margin-bottom:5px;}
+  .svc-price{font-size:14px;font-weight:700;color:var(--blue);}
+  .svc-unit{font-size:10px;color:var(--text3);margin-top:2px;}
+  .svc-group-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:14px 20px 4px;grid-column:1/-1;}
+
   /* PANES */
   .pane{display:none;flex-direction:column;flex:1;overflow:hidden;}
   .pane.active{display:flex;}
@@ -253,6 +266,7 @@
       </div>
       <div class="cat-row" id="cat-row"></div>
       <div class="product-grid" id="product-grid"></div>
+      <div class="svc-grid" id="svc-panel" style="display:none;"></div>
     </div>
 
     <!-- INVENTORY PANE -->
@@ -370,6 +384,20 @@
 <div class="toast" id="toast"></div>
 
 <script>
+const SERVICES=[
+  {id:'sv1', name:'GCash Cash In',    icon:'💚', group:'GCash / PayMaya', variable:true,  price:0,  unit:'enter fee amount'},
+  {id:'sv2', name:'GCash Cash Out',   icon:'💸', group:'GCash / PayMaya', variable:true,  price:0,  unit:'enter fee amount'},
+  {id:'sv3', name:'Maya Cash In',     icon:'💜', group:'GCash / PayMaya', variable:true,  price:0,  unit:'enter fee amount'},
+  {id:'sv4', name:'Maya Cash Out',    icon:'💸', group:'GCash / PayMaya', variable:true,  price:0,  unit:'enter fee amount'},
+  {id:'sv5', name:'Print (B&W)',      icon:'🖨️', group:'Printing',        variable:false, price:3,  unit:'per page'},
+  {id:'sv6', name:'Print (Color)',    icon:'🖨️', group:'Printing',        variable:false, price:10, unit:'per page'},
+  {id:'sv7', name:'Photocopy / Xerox',icon:'📄', group:'Printing',        variable:false, price:2,  unit:'per page'},
+  {id:'sv8', name:'Laminate (ID)',    icon:'🪪', group:'Printing',        variable:false, price:10, unit:'per piece'},
+  {id:'sv9', name:'Laminate (Short)', icon:'📋', group:'Printing',        variable:false, price:15, unit:'per piece'},
+  {id:'sv10',name:'Laminate (Long)',  icon:'📋', group:'Printing',        variable:false, price:20, unit:'per piece'},
+  {id:'sv11',name:'Online Payment',   icon:'🌐', group:'Online Services', variable:true,  price:0,  unit:'enter service fee'},
+];
+
 const CATS=[
   {name:'Gardening',icon:'🌱'},
   {name:'School Supplies',icon:'✏️'},
@@ -472,10 +500,62 @@ function switchTab(t){
 
 function renderCats(){
   const el=document.getElementById('cat-row');
+  const svc=`<button class="cat-pill ${activeCat==='__svc__'?'active':''}" onclick="setCat('__svc__')" style="${activeCat==='__svc__'?'background:var(--blue);border-color:var(--blue);':''}">⚡ Services</button>`;
   const all=`<button class="cat-pill ${activeCat==='All'?'active':''}" onclick="setCat('All')">All</button>`;
-  el.innerHTML=all+cats().map(c=>`<button class="cat-pill ${activeCat===c?'active':''}" onclick="setCat('${c}')">${catIcon(c)} ${c}</button>`).join('');
+  el.innerHTML=svc+all+cats().map(c=>`<button class="cat-pill ${activeCat===c?'active':''}" onclick="setCat('${c}')">${catIcon(c)} ${c}</button>`).join('');
 }
-function setCat(c){activeCat=c;renderCats();renderProducts();}
+function setCat(c){
+  activeCat=c;
+  renderCats();
+  const pg=document.getElementById('product-grid');
+  const sp=document.getElementById('svc-panel');
+  if(c==='__svc__'){pg.style.display='none';sp.style.display='grid';renderServices();}
+  else{pg.style.display='grid';sp.style.display='none';renderProducts();}
+}
+
+function renderServices(){
+  const el=document.getElementById('svc-panel');
+  let html='';
+  let lastGroup='';
+  SERVICES.forEach(s=>{
+    if(s.group!==lastGroup){html+=`<div class="svc-group-label">${s.group}</div>`;lastGroup=s.group;}
+    html+=`<div class="svc-card" onclick="addServiceToCart('${s.id}')">
+      <div class="svc-icon">${s.icon}</div>
+      <div class="svc-name">${s.name}</div>
+      <div class="svc-price">${s.variable?'Enter amount':fmt(s.price)}</div>
+      <div class="svc-unit">${s.unit}</div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+function addServiceToCart(id){
+  const s=SERVICES.find(x=>x.id===id);
+  if(!s)return;
+  if(s.variable){
+    openModal(`<div class="modal">
+      <h3>${s.icon} ${s.name}</h3>
+      <div class="fg"><label>Fee / Amount to charge (₱)</label><input id="svc-amt" type="number" min="0" step="0.01" placeholder="0.00" /></div>
+      <div class="mactions">
+        <button class="btn" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-green" onclick="confirmSvcAdd('${s.id}')">Add to Order</button>
+      </div>
+    </div>`);
+    setTimeout(()=>{const el=document.getElementById('svc-amt');if(el)el.focus();},50);
+  } else {
+    const existing=cart.find(x=>x.svcId===s.id);
+    if(existing){existing.qty++;renderCart();toast(`${s.name} qty updated.`);}
+    else{cart.push({id:'svc_'+Date.now(),svcId:s.id,name:s.name,price:s.price,qty:1,isService:true});renderCart();toast(`${s.name} added!`);}
+  }
+}
+
+function confirmSvcAdd(id){
+  const s=SERVICES.find(x=>x.id===id);
+  const amt=parseFloat(document.getElementById('svc-amt').value);
+  if(isNaN(amt)||amt<=0){toast('Enter a valid amount.');return;}
+  cart.push({id:'svc_'+Date.now(),svcId:s.id,name:s.name,price:amt,qty:1,isService:true});
+  closeModal();renderCart();toast(`${s.name} added!`);
+}
 
 function renderProducts(){
   const q=(document.getElementById('search').value||'').toLowerCase();
@@ -506,10 +586,12 @@ function addToCart(id){
 function chQty(id,d){
   const ci=cart.find(x=>x.id===id);
   if(!ci)return;
-  const p=products.find(x=>x.id===id);
   ci.qty+=d;
-  if(ci.qty<=0)cart=cart.filter(x=>x.id!==id);
-  else if(p&&ci.qty>p.stock){ci.qty=p.stock;toast('Max stock reached.');}
+  if(ci.qty<=0){cart=cart.filter(x=>x.id!==id);}
+  else if(!ci.isService){
+    const p=products.find(x=>x.id===ci.id);
+    if(p&&ci.qty>p.stock){ci.qty=p.stock;toast('Max stock reached.');}
+  }
   renderCart();
 }
 
@@ -610,7 +692,7 @@ function checkout(){
   const da=calcDisc(sub);
   const tot=Math.max(0,sub-da);
   const items=cart.map(i=>({...i}));
-  items.forEach(i=>{const p=products.find(x=>x.id===i.id);if(p)p.stock-=i.qty;});
+  items.forEach(i=>{if(!i.isService){const p=products.find(x=>x.id===i.id);if(p)p.stock-=i.qty;}});
   sv('hs_products',products);
   const txn={id:Date.now(),time:ts(),items,subtotal:sub,discAmt:da,discount:appliedDisc?{...appliedDisc}:null,total:tot};
   sales.unshift(txn);sv('hs_sales',sales);
