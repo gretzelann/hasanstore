@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kold Koncepts – Data Entry Portal</title>
+<style>
+:root{
+  --blue:#1B4DBF;--blue-dark:#163d9e;--blue-light:#e8eeff;--blue-mid:#4a7de8;
+  --ice:#d6eeff;--green:#1a7a55;--green-light:#e6f5ef;
+  --amber:#b86800;--amber-light:#fff3e0;
+  --red:#c0392b;--red-light:#fdecea;
+  --purple:#6d28d9;--purple-light:#ede9fe;
+  --gray:#6b7280;--gray-light:#f3f4f6;--gray-mid:#e5e7eb;
+  --border:#e0e4ea;--white:#fff;--text:#111827;--text-soft:#4b5563;
+  --shadow:0 2px 10px rgba(0,0,0,.08);--radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:var(--text);min-height:100vh}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#0a2a6e,#1B4DBF);color:#fff;padding:0 28px;display:flex;align-items:center;gap:14px;height:64px;box-shadow:0 3px 14px rgba(0,0,0,.22)}
+.logo-icon{font-size:30px}
+.brand-name{font-size:21px;font-weight:800;letter-spacing:.4px}
+.brand-name span{color:#7dd3fc}
+.brand-sub{font-size:11px;opacity:.7;margin-top:2px}
+header .spacer{flex:1}
+.header-date{text-align:right;font-size:12px;opacity:.8;line-height:1.6}
+
+/* NAV */
+nav{background:#fff;border-bottom:2px solid var(--border);display:flex;padding:0 20px;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:none;padding:13px 18px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-soft);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s;display:flex;align-items:center;gap:7px}
+nav button:hover{color:var(--blue);background:var(--blue-light)}
+nav button.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+nav .badge-count{background:var(--blue);color:#fff;border-radius:20px;font-size:10px;padding:1px 7px;font-weight:700}
+
+/* LAYOUT */
+.page{display:none;padding:24px 28px;max-width:1300px;margin:0 auto}
+.page.active{display:block}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.section-header h2{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
+.section-header .actions{display:flex;gap:10px;align-items:center}
+
+/* CARDS */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-header{padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-header h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-body{padding:20px}
+
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+/* STAT CARDS */
+.stat{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:18px 20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:16px}
+.stat-icon{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.stat-icon.blue{background:var(--blue-light)}
+.stat-icon.green{background:var(--green-light)}
+.stat-icon.amber{background:var(--amber-light)}
+.stat-icon.purple{background:var(--purple-light)}
+.stat-icon.red{background:var(--red-light)}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray)}
+.stat-value{font-size:24px;font-weight:800;line-height:1.2}
+.stat-value.blue{color:var(--blue)}
+.stat-value.green{color:var(--green)}
+.stat-value.amber{color:var(--amber)}
+.stat-value.purple{color:var(--purple)}
+
+/* FORM */
+.form-section{margin-bottom:22px}
+.form-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--blue);border-bottom:2px solid var(--blue-light);padding-bottom:6px;margin-bottom:14px}
+.form-row{display:grid;gap:14px;margin-bottom:14px}
+.form-row.c1{grid-template-columns:1fr}
+.form-row.c2{grid-template-columns:1fr 1fr}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr}
+.form-row.c4{grid-template-columns:1fr 1fr 1fr 1fr}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-soft);margin-bottom:5px}
+.field label .req{color:var(--red)}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);background:#fff;transition:.15s;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,77,191,.1);background:#fafcff}
+.field textarea{resize:vertical;min-height:70px}
+.field .prefix-wrap{position:relative}
+.field .prefix-wrap .prefix{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:13px;pointer-events:none}
+.field .prefix-wrap input{padding-left:26px}
+.field .hint{font-size:11px;color:var(--gray);margin-top:3px}
+.field .char-count{font-size:11px;color:var(--gray);text-align:right;margin-top:2px}
+
+/* RADIO / CHECK GROUP */
+.radio-group,.check-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.radio-group label,.check-group label{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;transition:.15s;user-select:none}
+.radio-group label:hover,.check-group label:hover{border-color:var(--blue);background:var(--blue-light)}
+.radio-group input,.check-group input{accent-color:var(--blue)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#156044}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#a93226}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-amber:hover{background:#966000}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-purple:hover{background:#5b21b6}
+.btn-ghost{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-ghost:hover{background:var(--blue-light)}
+.btn-outline{background:#fff;color:var(--text-soft);border:1.5px solid var(--border)}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-icon{width:32px;height:32px;padding:0;justify-content:center;border-radius:7px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:var(--gray);font-size:14px;transition:.15s}
+.btn-icon:hover.del{background:var(--red-light);color:var(--red);border-color:var(--red)}
+.btn-icon:hover.edit{background:var(--blue-light);color:var(--blue);border-color:var(--blue)}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--border);margin-top:6px}
+
+/* TABLES */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:linear-gradient(135deg,#1B4DBF,#2d5fd4);color:#fff;padding:10px 13px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+thead th:first-child{border-radius:7px 0 0 0}
+thead th:last-child{border-radius:0 7px 0 0}
+tbody tr{border-bottom:1px solid var(--border);transition:.1s}
+tbody tr:hover{background:var(--blue-light)}
+tbody td{padding:10px 13px;vertical-align:middle}
+tbody tr:last-child{border-bottom:none}
+.td-right{text-align:right;font-variant-numeric:tabular-nums}
+.td-center{text-align:center}
+tfoot td{padding:10px 13px;font-weight:700;border-top:2px solid var(--blue);background:var(--blue-light)}
+.table-empty{text-align:center;padding:40px 20px;color:var(--gray)}
+.table-empty .icon{font-size:36px;margin-bottom:8px}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-amber{background:var(--amber-light);color:var(--amber)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-purple{background:var(--purple-light);color:var(--purple)}
+.badge-gray{background:var(--gray-light);color:var(--gray)}
+
+/* SEARCH BAR */
+.search-bar{position:relative}
+.search-bar input{padding:8px 12px 8px 34px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;width:220px;transition:.15s}
+.search-bar input:focus{outline:none;border-color:var(--blue);width:260px}
+.search-bar .icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:14px;pointer-events:none}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 20px;border-radius:8px;color:#fff;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.2);animation:slideUp .3s ease;display:flex;align-items:center;gap:8px}
+.toast.success{background:var(--green)}
+.toast.error{background:var(--red)}
+.toast.info{background:var(--blue)}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* STATUS INDICATOR */
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot-green{background:var(--green)}
+.dot-amber{background:var(--amber)}
+.dot-red{background:var(--red)}
+.dot-blue{background:var(--blue)}
+
+/* AVATAR */
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-mid));color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+
+/* UNIT CARD (customer detail) */
+.unit-tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--ice);border:1px solid var(--blue-light);border-radius:6px;font-size:12px;color:var(--blue);font-weight:500;margin:3px}
+
+/* STOCK PILL */
+.stock-high{color:var(--green);font-weight:600}
+.stock-low{color:var(--amber);font-weight:600}
+.stock-out{color:var(--red);font-weight:600}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 50px rgba(0,0,0,.25)}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#f8faff,#fff)}
+.modal-header h3{font-size:16px;font-weight:800}
+.modal-body{padding:22px}
+.modal-footer{padding:15px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:var(--gray-light)}
+.close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray);padding:0 4px;line-height:1}
+.close-btn:hover{color:var(--red)}
+
+/* CONFIRM DIALOG */
+.confirm-dialog{background:#fff;border-radius:12px;padding:28px;max-width:380px;text-align:center;box-shadow:0 12px 50px rgba(0,0,0,.25)}
+.confirm-dialog .icon{font-size:40px;margin-bottom:12px}
+.confirm-dialog h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.confirm-dialog p{font-size:13px;color:var(--text-soft);margin-bottom:20px}
+.confirm-dialog .btns{display:flex;gap:10px;justify-content:center}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .grid4,.grid3{grid-template-columns:1fr 1fr}
+  .form-row.c3,.form-row.c4{grid-template-columns:1fr 1fr}
+  .page{padding:16px}
+}
+@media(max-width:600px){
+  .grid4,.grid3,.grid2{grid-template-columns:1fr}
+  .form-row.c2,.form-row.c3,.form-row.c4{grid-template-columns:1fr}
+  nav button{padding:10px 12px;font-size:12px}
+}
+@media print{header,nav,.btn,button,.form-actions,.actions{display:none!important}.page{display:block!important;padding:0}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">❄️</div>
+  <div>
+    <div class="brand-name">Kold <span>Koncepts</span></div>
+    <div class="brand-sub">Refrigeration &amp; Air Conditioning · Data Entry Portal</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="header-date" id="headerDate"></div>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('dashboard')">🏠 Dashboard</button>
+  <button onclick="showPage('sales')">🧾 Sales <span class="badge-count" id="cnt-sales">0</span></button>
+  <button onclick="showPage('expenses')">💸 Expenses <span class="badge-count" id="cnt-expenses">0</span></button>
+  <button onclick="showPage('customers')">👥 Customers <span class="badge-count" id="cnt-customers">0</span></button>
+  <button onclick="showPage('inventory')">📦 Inventory <span class="badge-count" id="cnt-inventory">0</span></button>
+</nav>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================================ -->
+<!-- DASHBOARD -->
+<!-- ============================================================ -->
+<div class="page active" id="page-dashboard">
+  <div class="section-header">
+    <h2>🏠 Overview Dashboard</h2>
+    <div class="actions">
+      <span style="font-size:12px;color:var(--gray)">All data stored locally in your browser</span>
+    </div>
+  </div>
+  <div class="grid4" id="dashStats" style="margin-bottom:20px"></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><h3>🧾 Recent Sales</h3><button class="btn btn-ghost btn-sm" onclick="showPage('sales')">View All</button></div>
+      <div class="table-wrap" id="dashSales"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>💸 Recent Expenses</h3><button class="btn btn-ghost btn-sm" onclick="showPage('expenses')">View All</button></div>
+      <div class="table-wrap" id="dashExpenses"></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="card">
+      <div class="card-header"><h3>👥 Recent Customers</h3><button class="btn btn-ghost btn-sm" onclick="showPage('customers')">View All</button></div>
+      <div class="table-wrap" id="dashCustomers"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>📦 Low Stock Items</h3><button class="btn btn-ghost btn-sm" onclick="showPage('inventory')">View All</button></div>
+      <div class="table-wrap" id="dashInventory"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SALES -->
+<!-- ============================================================ -->
+<div class="page" id="page-sales">
+  <div class="section-header">
+    <h2>🧾 Sales & Transactions</h2>
+    <div class="actions">
+      <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="Search sales…" oninput="renderSalesTable(this.value)" id="salesSearch"></div>
+      <button class="btn btn-success" onclick="openSalesModal()">＋ New Sale</button>
+    </div>
+  </div>
+  <!-- FORM -->
+  <div class="card" id="salesFormCard" style="margin-bottom:18px">
+    <div class="card-header">
+      <h3 id="salesFormTitle">➕ New Sale / Service Transaction</h3>
+      <button class="btn-outline btn btn-sm" onclick="toggleForm('salesFormCard')">▲ Collapse</button>
+    </div>
+    <div class="card-body" id="salesFormBody">
+      <div class="form-section">
+        <div class="form-section-title">Transaction Details</div>
+        <div class="form-row c4">
+          <div class="field"><label>Date <span class="req">*</span></label><input type="date" id="s_date"></div>
+          <div class="field"><label>Invoice / OR No. <span class="req">*</span></label><input type="text" id="s_ref" placeholder="e.g. INV-0001"></div>
+          <div class="field"><label>Customer Name <span class="req">*</span></label><input type="text" id="s_customer" placeholder="Customer name" list="customerList"></div>
+          <div class="field"><label>Contact No.</label><input type="text" id="s_contact" placeholder="09XX-XXX-XXXX"></div>
+        </div>
+        <div class="form-row c4">
+          <div class="field"><label>Service Type <span class="req">*</span></label>
+            <select id="s_type">
+              <option value="">Select…</option>
+              <option value="installation">AC Installation</option>
+              <option value="repair">AC Repair</option>
+              <option value="cleaning">AC Cleaning / PM</option>
+              <option value="refrigeration">Refrigeration Repair</option>
+              <option value="parts">Parts Sale</option>
+              <option value="checkup">Diagnostic / Check-up</option>
+              <option value="other">Other Service</option>
+            </select>
+          </div>
+          <div class="field"><label>AC / Unit Brand & Model</label><input type="text" id="s_unit" placeholder="e.g. Carrier 1.5HP Split Type"></div>
+          <div class="field"><label>Job Address / Location</label><input type="text" id="s_address" placeholder="Street, Barangay, City"></div>
+          <div class="field"><label>Technician</label><input type="text" id="s_tech" placeholder="Technician name"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Amount & Payment</div>
+        <div class="form-row c4">
+          <div class="field"><label>Amount (₱) <span class="req">*</span></label>
+            <div class="prefix-wrap"><span class="prefix">₱</span><input type="number" id="s_amount" min="0" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="field"><label>Parts Cost (₱)</label>
+            <div class="prefix-wrap"><span class="prefix">₱</span><input type="number" id="s_parts" min="0" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="field"><label>Labor Fee (₱)</label>
+            <div class="prefix-wrap"><span class="prefix">₱</span><input type="number" id="s_labor" min="0" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="field"><label>Payment Mode <span class="req">*</span></label>
+            <select id="s_payment">
+              <option value="cash">Cash</option>
+              <option value="gcash">GCash</option>
+              <option value="maya">Maya</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="credit">On Credit</option>
+              <option value="check">Check</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row c2">
+          <div class="field">
+            <label>Payment Status</label>
+            <div class="radio-group">
+              <label><input type="radio" name="s_status" value="paid" checked> ✅ Paid</label>
+              <label><input type="radio" name="s_status" value="partial"> ⏳ Partial</label>
+              <label><input type="radio" name="s_status" value="unpaid"> ❌ Unpaid</label>
+            </div>
+          </div>
+          <div class="field"><label>Amount Received (if partial)</label>
+            <div class="prefix-wrap"><span class="prefix">₱</span><input type="number" id="s_received" min="0" step="0.01" placeholder="0.00"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Notes & Warranty</div>
+        <div class="form-row c3">
+          <div class="field"><label>Job Notes / Findings</label><textarea id="s_notes" placeholder="Describe work done, findings, recommendations…"></textarea></div>
+          <div class="field"><label>Warranty (if any)</label><input type="text" id="s_warranty" placeholder="e.g. 90 days parts &amp; labor"></div>
+          <div class="field"><label>Next Service Date</label><input type="date" id="s_nextservice"></div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="clearForm('sales')">🗑 Clear</button>
+        <button class="btn btn-success" onclick="saveSale()">💾 Save Transaction</button>
+      </div>
+    </div>
+  </div>
+  <!-- TABLE -->
+  <div class="card">
+    <div class="card-header"><h3>📋 All Sales Records</h3><span id="salesCount" style="font-size:12px;color:var(--gray)"></span></div>
+    <div class="table-wrap" id="salesTable"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- EXPENSES -->
+<!-- ============================================================ -->
+<div class="page" id="page-expenses">
+  <div class="section-header">
+    <h2>💸 Expenses & Payments</h2>
+    <div class="actions">
+      <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="Search expenses…" oninput="renderExpensesTable(this.value)"></div>
+      <button class="btn btn-danger" onclick="openExpenseModal()">＋ New Expense</button>
+    </div>
+  </div>
+  <div class="card" id="expFormCard" style="margin-bottom:18px">
+    <div class="card-header">
+      <h3 id="expFormTitle">➕ New Expense / Payment</h3>
+      <button class="btn-outline btn btn-sm" onclick="toggleForm('expFormCard')">▲ Collapse</button>
+    </div>
+    <div class="card-body" id="expFormBody">
+      <div class="form-section">
+        <div class="form-section-title">Expense Details</div>
+        <div class="form-row c4">
+          <div class="field"><label>Date <span class="req">*</span></label><input type="date" id="e_date"></div>
+          <div class="field"><label>Voucher / Ref No.</label><input type="text" id="e_ref" placeholder="e.g. CV-0001"></div>
+          <div class="field"><label>Paid To / Supplier <span class="req">*</span></label><input type="text" id="e_supplier" placeholder="Supplier or payee name"></div>
+          <div class="field"><label>Category <span class="req">*</span></label>
+            <select id="e_category">
+              <option value="">Select…</option>
+              <optgroup label="Operations">
+                <option value="parts">Parts &amp; Materials</option>
+                <option value="tools">Tools &amp; Equipment</option>
+                <option value="fuel">Fuel &amp; Transportation</option>
+                <option value="labor">Labor / Wages</option>
+              </optgroup>
+              <optgroup label="Overhead">
+                <option value="rent">Rent</option>
+                <option value="utilities">Utilities (Electric, Water)</option>
+                <option value="internet">Internet / Phone</option>
+                <option value="insurance">Insurance</option>
+              </optgroup>
+              <optgroup label="Admin">
+                <option value="supplies">Office Supplies</option>
+                <option value="ads">Advertising / Marketing</option>
+                <option value="permits">Permits &amp; Licenses</option>
+                <option value="repairs">Equipment Repair</option>
+                <option value="misc">Miscellaneous</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="form-row c4">
+          <div class="field"><label>Amount (₱) <span class="req">*</span></label>
+            <div class="prefix-wrap"><span class="prefix">₱</span><input type="number" id="e_amount" min="0" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="field"><label>Payment Mode</label>
+            <select id="e_payment">
+              <option value="cash">Cash</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="gcash">GCash</option>
+              <option value="check">Check</option>
+              <option value="credit">On Credit</option>
+            </select>
+          </div>
+          <div class="field"><label>Receipt / Invoice No.</label><input type="text" id="e_invoice" placeholder="Supplier invoice no."></div>
+          <div class="field"><label>Related Job / Sale Ref</label><input type="text" id="e_jobref" placeholder="e.g. INV-0001"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Additional Info</div>
+        <div class="form-row c2">
+          <div class="field"><label>Description / Purpose</label><textarea id="e_desc" placeholder="What was this expense for?"></textarea></div>
+          <div class="field">
+            <label>Is this tax-deductible?</label>
+            <div class="radio-group">
+              <label><input type="radio" name="e_tax" value="yes"> ✅ Yes</label>
+              <label><input type="radio" name="e_tax" value="no" checked> ❌ No</label>
+            </div>
+            <div style="margin-top:12px">
+              <label style="font-size:12px;font-weight:600;color:var(--text-soft)">VAT Amount (₱)</label>
+              <div class="prefix-wrap" style="margin-top:5px"><span class="prefix">₱</span><input type="number" id="e_vat" min="0" step="0.01" placeholder="0.00"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="clearForm('expense')">🗑 Clear</button>
+        <button class="btn btn-danger" onclick="saveExpense()">💾 Save Expense</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>📋 All Expense Records</h3><span id="expCount" style="font-size:12px;color:var(--gray)"></span></div>
+    <div class="table-wrap" id="expensesTable"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CUSTOMERS -->
+<!-- ============================================================ -->
+<div class="page" id="page-customers">
+  <div class="section-header">
+    <h2>👥 Customers & Contacts</h2>
+    <div class="actions">
+      <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="Search customers…" oninput="renderCustomersTable(this.value)"></div>
+      <button class="btn btn-amber" onclick="openCustomerModal()">＋ New Customer</button>
+    </div>
+  </div>
+  <div class="card" id="custFormCard" style="margin-bottom:18px">
+    <div class="card-header">
+      <h3 id="custFormTitle">➕ New Customer / Contact</h3>
+      <button class="btn-outline btn btn-sm" onclick="toggleForm('custFormCard')">▲ Collapse</button>
+    </div>
+    <div class="card-body" id="custFormBody">
+      <div class="form-section">
+        <div class="form-section-title">Personal / Business Info</div>
+        <div class="form-row c4">
+          <div class="field"><label>Full Name <span class="req">*</span></label><input type="text" id="c_name" placeholder="First Last"></div>
+          <div class="field"><label>Customer Type</label>
+            <select id="c_type">
+              <option value="residential">🏠 Residential</option>
+              <option value="commercial">🏢 Commercial</option>
+              <option value="industrial">🏭 Industrial</option>
+            </select>
+          </div>
+          <div class="field"><label>Mobile No. <span class="req">*</span></label><input type="tel" id="c_mobile" placeholder="09XX-XXX-XXXX"></div>
+          <div class="field"><label>Landline / Alternate</label><input type="tel" id="c_landline" placeholder="(02) XXXX-XXXX"></div>
+        </div>
+        <div class="form-row c3">
+          <div class="field"><label>Email Address</label><input type="email" id="c_email" placeholder="email@example.com"></div>
+          <div class="field"><label>Company / Business Name</label><input type="text" id="c_company" placeholder="If commercial"></div>
+          <div class="field"><label>How did you hear about us?</label>
+            <select id="c_source">
+              <option value="">Select…</option>
+              <option value="referral">Referral</option>
+              <option value="facebook">Facebook</option>
+              <option value="walk-in">Walk-in</option>
+              <option value="flyer">Flyer / Poster</option>
+              <option value="repeat">Repeat Customer</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Address</div>
+        <div class="form-row c4">
+          <div class="field c-span2"><label>Street Address</label><input type="text" id="c_street" placeholder="House/Lot No., Street"></div>
+          <div class="field"><label>Barangay</label><input type="text" id="c_barangay" placeholder="Barangay"></div>
+          <div class="field"><label>City / Municipality</label><input type="text" id="c_city" placeholder="City"></div>
+        </div>
+        <div class="form-row c3">
+          <div class="field"><label>Province</label><input type="text" id="c_province" placeholder="Province"></div>
+          <div class="field"><label>Zip Code</label><input type="text" id="c_zip" placeholder="0000"></div>
+          <div class="field"><label>Landmark / Directions</label><input type="text" id="c_landmark" placeholder="Near / beside…"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">AC / Refrigeration Units</div>
+        <div id="unitList" style="margin-bottom:10px"></div>
+        <button class="btn btn-ghost btn-sm" onclick="addUnit()">＋ Add Unit</button>
+        <p class="hint" style="margin-top:6px;font-size:11px;color:var(--gray)">Record all AC/refrigeration units owned by this customer for service history tracking.</p>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Notes</div>
+        <div class="form-row c1">
+          <div class="field"><textarea id="c_notes" placeholder="Special instructions, access notes, service history notes…"></textarea></div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="clearForm('customer')">🗑 Clear</button>
+        <button class="btn btn-amber" onclick="saveCustomer()">💾 Save Customer</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>📋 Customer Directory</h3><span id="custCount" style="font-size:12px;color:var(--gray)"></span></div>
+    <div class="table-wrap" id="customersTable"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- INVENTORY -->
+<!-- ============================================================ -->
+<div class="page" id="page-inventory">
+  <div class="section-header">
+    <h2>📦 Inventory & Parts</h2>
+    <div class="actions">
+      <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="Search parts…" oninput="renderInventoryTable(this.value)"></div>
+      <button class="btn btn-purple" onclick="openInventoryModal()">＋ Add Item</button>
+    </div>
+  </div>
+  <div class="card" id="invFormCard" style="margin-bottom:18px">
+    <div class="card-header">
+      <h3 id="invFormTitle">➕ Add / Update Inventory Item</h3>
+      <button class="btn-outline btn btn-sm" onclick="toggleForm('invFormCard')">▲ Collapse</button>
+    </div>
+    <div class="card-body" id="invFormBody">
+      <div class="form-section">
+        <div class="form-section-title">Item Information</div>
+        <div class="form-row c4">
+          <div class="field"><label>Item Code / SKU</label><input type="text" id="i_code" placeholder="e.g. AC-CAP-001"></div>
+          <div class="field"><label>Item Name <span class="req">*</span></label><input type="text" id="i_name" placeholder="Part / material name"></div>
+          <div class="field"><label>Category <span class="req">*</span></label>
+            <select id="i_category">
+              <option value="">Select…</option>
+              <optgroup label="AC Parts">
+                <option value="compressor">Compressor</option>
+                <option value="capacitor">Capacitor</option>
+                <option value="fan-motor">Fan Motor</option>
+                <option value="refrigerant">Refrigerant / Freon</option>
+                <option value="thermostat">Thermostat</option>
+                <option value="pcboard">PC Board / Control</option>
+                <option value="drain-pump">Drain Pump</option>
+                <option value="filter">Air Filter</option>
+              </optgroup>
+              <optgroup label="Refrigeration">
+                <option value="evaporator">Evaporator Coil</option>
+                <option value="condenser">Condenser Coil</option>
+                <option value="defrost">Defrost Heater</option>
+                <option value="door-gasket">Door Gasket / Seal</option>
+              </optgroup>
+              <optgroup label="Supplies">
+                <option value="copper-tube">Copper Tube / Fittings</option>
+                <option value="insulation">Insulation Material</option>
+                <option value="electrical">Electrical Supplies</option>
+                <option value="tools">Tools &amp; Equipment</option>
+                <option value="consumables">Consumables</option>
+                <option value="other">Other</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="field"><label>Brand / Supplier</label><input type="text" id="i_brand" placeholder="Brand or supplier"></div>
+        </div>
+        <div class="form-row c4">
+          <div class="field"><label>Unit of Measure</label>
+            <select id="i_unit">
+              <option value="pcs">Pcs (piece)</option>
+              <option value="set">Set</option>
+              <option value="kg">kg</option>
+              <option value="lbs">lbs</option>
+              <option value="liter">Liter</option>
+              <option value="meter">Meter</option>
+              <option value="roll">Roll</option>
+              <option value="box">Box</option>
+              <option value="can">Can</option>
+            </select>
+          </div>
+          <div class="field"><label>Current Stock <span class="req">*</span></label><input type="number" id="i_stock" min="0" placeholder="0"></div>
+          <div class="field"><label>Minimum Stock Level</label><input type="number" id="i_minstock" min="0" placeholder="5" value="5"></div>
+          <div class="field"><label>Location / Shelf</label><input type="text" id="i_location" placeholder="e.g. Shelf A-3"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Pricing</div>
+        <div class="form-row c4">
+          <div class="field"><label>Purchase Cost (₱)</label>
+            <div class="prefix-wrap"><span class="prefix">₱</span><input type="number" id="i_cost" min="0" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="field"><label>Selling Price (₱)</label>
+            <div class="prefix-wrap"><span class="prefix">₱</span><input type="number" id="i_price" min="0" step="0.01" placeholder="0.00"></div>
+          </div>
+          <div class="field"><label>Reorder Quantity</label><input type="number" id="i_reorder" min="1" placeholder="10"></div>
+          <div class="field"><label>Preferred Supplier</label><input type="text" id="i_supplier" placeholder="Supplier name"></div>
+        </div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">Additional</div>
+        <div class="form-row c2">
+          <div class="field"><label>Compatible Models / Notes</label><textarea id="i_notes" placeholder="Compatible AC brands, models, or special notes…"></textarea></div>
+          <div class="field">
+            <label>Item Status</label>
+            <div class="radio-group" style="margin-top:6px">
+              <label><input type="radio" name="i_status" value="active" checked> ✅ Active</label>
+              <label><input type="radio" name="i_status" value="inactive"> 🚫 Discontinued</label>
+            </div>
+            <div style="margin-top:14px">
+              <label style="font-size:12px;font-weight:600;color:var(--text-soft)">Last Restocked</label>
+              <input type="date" id="i_restocked" style="width:100%;margin-top:5px;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:13px">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-outline" onclick="clearForm('inventory')">🗑 Clear</button>
+        <button class="btn btn-purple" onclick="saveInventory()">💾 Save Item</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>📋 Inventory List</h3><span id="invCount" style="font-size:12px;color:var(--gray)"></span></div>
+    <div class="table-wrap" id="inventoryTable"></div>
+  </div>
+</div>
+
+<!-- VIEW MODALS -->
+<div class="modal-bg" id="viewModal">
+  <div class="modal" style="max-width:660px">
+    <div class="modal-header"><h3 id="viewModalTitle">Details</h3><button class="close-btn" onclick="closeModal('viewModal')">×</button></div>
+    <div class="modal-body" id="viewModalBody"></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('viewModal')">Close</button></div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div class="modal-bg" id="confirmModal">
+  <div class="confirm-dialog">
+    <div class="icon">⚠️</div>
+    <h3>Delete Record?</h3>
+    <p id="confirmMsg">This action cannot be undone.</p>
+    <div class="btns">
+      <button class="btn btn-outline" onclick="closeModal('confirmModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<datalist id="customerList"></datalist>
+
+<script>
+// ============================================================
+// DATA STORE
+// ============================================================
+const S={
+  get(k){try{return JSON.parse(localStorage.getItem('kk_de_'+k))||[]}catch{return[]}},
+  set(k,v){localStorage.setItem('kk_de_'+k,JSON.stringify(v))}
+};
+
+let sales=S.get('sales');
+let expenses=S.get('expenses');
+let customers=S.get('customers');
+let inventory=S.get('inventory');
+let nextId=+localStorage.getItem('kk_de_nid')||1;
+
+function newId(){const id=nextId++;localStorage.setItem('kk_de_nid',nextId);return id}
+function save(){S.set('sales',sales);S.set('expenses',expenses);S.set('customers',customers);S.set('inventory',inventory)}
+function today(){return new Date().toISOString().split('T')[0]}
+function fmt(d){if(!d)return'—';const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`}
+function peso(n){return'₱'+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function autoRef(pfx,arr){const m=arr.reduce((x,e)=>{const n=parseInt((e.ref||'').replace(/\D/g,''));return Math.max(x,n||0)},0);return`${pfx}-${String(m+1).padStart(4,'0')}`}
+function radio(name){return document.querySelector(`input[name="${name}"]:checked`)?.value||''}
+
+// TOAST
+function toast(msg,type='success'){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  const icons={success:'✅',error:'❌',info:'ℹ️'};
+  t.className=`toast ${type}`;t.innerHTML=`${icons[type]||''} ${msg}`;
+  c.appendChild(t);setTimeout(()=>t.remove(),3200);
+}
+
+// MODAL
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function openModal(id){document.getElementById(id).classList.add('open')}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+
+// CONFIRM
+let confirmCb=null;
+function confirm2(msg,cb){
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmOkBtn').onclick=()=>{closeModal('confirmModal');cb()};
+  openModal('confirmModal');
+}
+
+// TOGGLE FORM
+function toggleForm(cardId){
+  const body=document.querySelector(`#${cardId} .card-body`);
+  const btn=document.querySelector(`#${cardId} .btn-outline`);
+  const hidden=body.style.display==='none';
+  body.style.display=hidden?'':'none';
+  btn.textContent=hidden?'▲ Collapse':'▼ Expand';
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>{if(b.getAttribute('onclick')===`showPage('${id}')`)b.classList.add('active')});
+  updateCounts();
+  if(id==='dashboard')renderDashboard();
+  if(id==='sales')renderSalesTable();
+  if(id==='expenses')renderExpensesTable();
+  if(id==='customers'){renderCustomersTable();buildCustomerDatalist();}
+  if(id==='inventory')renderInventoryTable();
+}
+
+function updateCounts(){
+  document.getElementById('cnt-sales').textContent=sales.length;
+  document.getElementById('cnt-expenses').textContent=expenses.length;
+  document.getElementById('cnt-customers').textContent=customers.length;
+  document.getElementById('cnt-inventory').textContent=inventory.length;
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  const totalRev=sales.reduce((s,r)=>s+(+r.amount||0),0);
+  const totalExp=expenses.reduce((s,r)=>s+(+r.amount||0),0);
+  const unpaidSales=sales.filter(r=>r.status==='unpaid'||r.status==='partial');
+  const unpaidAmt=unpaidSales.reduce((s,r)=>s+(+r.amount-(+r.received||0)),0);
+  const lowStock=inventory.filter(i=>(+i.stock||0)<=(+i.minstock||5));
+
+  document.getElementById('dashStats').innerHTML=`
+    <div class="stat"><div class="stat-icon green">💰</div><div><div class="stat-label">Total Revenue</div><div class="stat-value green">${peso(totalRev)}</div><div style="font-size:11px;color:var(--gray)">${sales.length} transactions</div></div></div>
+    <div class="stat"><div class="stat-icon red">💸</div><div><div class="stat-label">Total Expenses</div><div class="stat-value" style="color:var(--red)">${peso(totalExp)}</div><div style="font-size:11px;color:var(--gray)">${expenses.length} records</div></div></div>
+    <div class="stat"><div class="stat-icon amber">⏳</div><div><div class="stat-label">Unpaid Receivables</div><div class="stat-value amber">${peso(unpaidAmt)}</div><div style="font-size:11px;color:var(--gray)">${unpaidSales.length} pending</div></div></div>
+    <div class="stat"><div class="stat-icon blue">📦</div><div><div class="stat-label">Low Stock Alerts</div><div class="stat-value blue">${lowStock.length}</div><div style="font-size:11px;color:var(--gray)">Items below minimum</div></div></div>
+  `;
+
+  // Recent sales
+  const rs=[...sales].sort((a,b)=>b.date?.localeCompare(a.date||'')).slice(0,6);
+  document.getElementById('dashSales').innerHTML=rs.length?`<table>
+    <thead><tr><th>Date</th><th>Customer</th><th>Service</th><th class="td-right">Amount</th></tr></thead>
+    <tbody>${rs.map(r=>`<tr><td>${fmt(r.date)}</td><td>${r.customer||'—'}</td><td><span class="badge badge-green">${SERVICE_LABELS[r.type]||r.type||'—'}</span></td><td class="td-right">${peso(r.amount)}</td></tr>`).join('')}</tbody>
+  </table>`:`<div class="table-empty"><div class="icon">🧾</div><p>No sales yet</p></div>`;
+
+  // Recent expenses
+  const re=[...expenses].sort((a,b)=>b.date?.localeCompare(a.date||'')).slice(0,6);
+  document.getElementById('dashExpenses').innerHTML=re.length?`<table>
+    <thead><tr><th>Date</th><th>Supplier</th><th>Category</th><th class="td-right">Amount</th></tr></thead>
+    <tbody>${re.map(r=>`<tr><td>${fmt(r.date)}</td><td>${r.supplier||'—'}</td><td><span class="badge badge-red">${EXP_LABELS[r.category]||r.category||'—'}</span></td><td class="td-right" style="color:var(--red)">${peso(r.amount)}</td></tr>`).join('')}</tbody>
+  </table>`:`<div class="table-empty"><div class="icon">💸</div><p>No expenses yet</p></div>`;
+
+  // Recent customers
+  const rc=[...customers].sort((a,b)=>b.id-a.id).slice(0,6);
+  document.getElementById('dashCustomers').innerHTML=rc.length?`<table>
+    <thead><tr><th>Name</th><th>Mobile</th><th>Type</th><th>City</th></tr></thead>
+    <tbody>${rc.map(r=>`<tr><td><strong>${r.name||'—'}</strong></td><td>${r.mobile||'—'}</td><td><span class="badge badge-amber">${CUST_TYPE[r.type]||r.type}</span></td><td>${r.city||'—'}</td></tr>`).join('')}</tbody>
+  </table>`:`<div class="table-empty"><div class="icon">👥</div><p>No customers yet</p></div>`;
+
+  // Low stock
+  document.getElementById('dashInventory').innerHTML=lowStock.length?`<table>
+    <thead><tr><th>Item</th><th>Category</th><th class="td-center">Stock</th><th class="td-center">Min</th></tr></thead>
+    <tbody>${lowStock.slice(0,6).map(r=>`<tr><td><strong>${r.name||'—'}</strong></td><td><span class="badge badge-purple">${INV_CAT[r.category]||r.category||'—'}</span></td>
+    <td class="td-center ${+r.stock===0?'stock-out':+r.stock<=(+r.minstock/2)?'stock-low':'stock-low'}">${r.stock}</td>
+    <td class="td-center" style="color:var(--gray)">${r.minstock||5}</td></tr>`).join('')}</tbody>
+  </table>`:`<div class="table-empty"><div class="icon">✅</div><p>All items adequately stocked</p></div>`;
+}
+
+// ============================================================
+// LABEL MAPS
+// ============================================================
+const SERVICE_LABELS={installation:'Installation',repair:'Repair',cleaning:'Cleaning/PM',refrigeration:'Refrigeration',parts:'Parts Sale',checkup:'Diagnostic',other:'Other'};
+const EXP_LABELS={parts:'Parts',tools:'Tools',fuel:'Fuel/Transport',labor:'Labor',rent:'Rent',utilities:'Utilities',internet:'Internet/Phone',insurance:'Insurance',supplies:'Supplies',ads:'Advertising',permits:'Permits',repairs:'Equip. Repair',misc:'Misc'};
+const PAY_LABELS={cash:'Cash',gcash:'GCash',maya:'Maya',bank:'Bank',credit:'Credit',check:'Check'};
+const STATUS_LABELS={paid:'Paid',partial:'Partial',unpaid:'Unpaid'};
+const STATUS_BADGE={paid:'badge-green',partial:'badge-amber',unpaid:'badge-red'};
+const CUST_TYPE={residential:'Residential',commercial:'Commercial',industrial:'Industrial'};
+const INV_CAT={compressor:'Compressor',capacitor:'Capacitor','fan-motor':'Fan Motor',refrigerant:'Refrigerant',thermostat:'Thermostat',pcboard:'PC Board',filter:'Air Filter',evaporator:'Evaporator','door-gasket':'Door Gasket',other:'Other','copper-tube':'Copper Tube',insulation:'Insulation',electrical:'Electrical',tools:'Tools',consumables:'Consumables','drain-pump':'Drain Pump',condenser:'Condenser',defrost:'Defrost Heater'};
+
+// ============================================================
+// SALES
+// ============================================================
+let editingSale=null;
+
+function openSalesModal(id=null){showPage('sales');toggleForm('salesFormCard');/* already visible */}
+function clearForm(t){
+  if(t==='sales'){editingSale=null;document.getElementById('salesFormTitle').textContent='➕ New Sale / Service Transaction';['s_date','s_ref','s_customer','s_contact','s_unit','s_address','s_tech','s_amount','s_parts','s_labor','s_received','s_notes','s_warranty','s_nextservice'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('s_date').value=today();document.getElementById('s_ref').value=autoRef('INV',sales);document.getElementById('s_type').value='';document.getElementById('s_payment').value='cash';document.querySelector('input[name="s_status"][value="paid"]').checked=true;}
+  if(t==='expense'){editingExp=null;document.getElementById('expFormTitle').textContent='➕ New Expense / Payment';['e_date','e_ref','e_supplier','e_amount','e_invoice','e_jobref','e_desc','e_vat'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('e_date').value=today();document.getElementById('e_category').value='';document.getElementById('e_payment').value='cash';document.querySelector('input[name="e_tax"][value="no"]').checked=true;}
+  if(t==='customer'){editingCust=null;document.getElementById('custFormTitle').textContent='➕ New Customer / Contact';['c_name','c_mobile','c_landline','c_email','c_company','c_street','c_barangay','c_city','c_province','c_zip','c_landmark','c_notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('c_type').value='residential';document.getElementById('c_source').value='';unitEntries=[];renderUnitList();}
+  if(t==='inventory'){editingInv=null;document.getElementById('invFormTitle').textContent='➕ Add / Update Inventory Item';['i_code','i_name','i_brand','i_stock','i_minstock','i_location','i_cost','i_price','i_reorder','i_supplier','i_notes','i_restocked'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('i_category').value='';document.getElementById('i_unit').value='pcs';document.querySelector('input[name="i_status"][value="active"]').checked=true;document.getElementById('i_minstock').value=5;}
+}
+
+function saveSale(){
+  const date=document.getElementById('s_date').value;
+  const ref=document.getElementById('s_ref').value.trim();
+  const customer=document.getElementById('s_customer').value.trim();
+  const amount=document.getElementById('s_amount').value;
+  const type=document.getElementById('s_type').value;
+  const payment=document.getElementById('s_payment').value;
+  if(!date||!customer||!amount||!type)return toast('Fill required fields (Date, Customer, Amount, Service Type)','error');
+  const rec={
+    id:editingSale||newId(),date,ref,customer,
+    contact:document.getElementById('s_contact').value.trim(),
+    type,payment,
+    unit:document.getElementById('s_unit').value.trim(),
+    address:document.getElementById('s_address').value.trim(),
+    tech:document.getElementById('s_tech').value.trim(),
+    amount:+amount,
+    parts:+document.getElementById('s_parts').value||0,
+    labor:+document.getElementById('s_labor').value||0,
+    status:radio('s_status'),
+    received:+document.getElementById('s_received').value||0,
+    notes:document.getElementById('s_notes').value.trim(),
+    warranty:document.getElementById('s_warranty').value.trim(),
+    nextservice:document.getElementById('s_nextservice').value,
+    createdAt:editingSale?sales.find(s=>s.id===editingSale)?.createdAt:new Date().toISOString()
+  };
+  if(editingSale){const idx=sales.findIndex(s=>s.id===editingSale);if(idx>=0)sales[idx]=rec;}
+  else sales.push(rec);
+  save();clearForm('sales');renderSalesTable();updateCounts();
+  toast(editingSale?'Sale updated!':'Sale saved!');editingSale=null;
+}
+
+function editSale(id){
+  const r=sales.find(s=>s.id===id);if(!r)return;
+  editingSale=id;
+  document.getElementById('salesFormTitle').textContent='✏️ Edit Sale Record';
+  const fields={s_date:r.date,s_ref:r.ref,s_customer:r.customer,s_contact:r.contact,s_unit:r.unit,s_address:r.address,s_tech:r.tech,s_amount:r.amount,s_parts:r.parts,s_labor:r.labor,s_received:r.received,s_notes:r.notes,s_warranty:r.warranty,s_nextservice:r.nextservice};
+  Object.entries(fields).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val||'';});
+  document.getElementById('s_type').value=r.type||'';
+  document.getElementById('s_payment').value=r.payment||'cash';
+  const rb=document.querySelector(`input[name="s_status"][value="${r.status}"]`);
+  if(rb)rb.checked=true;
+  const body=document.getElementById('salesFormBody');body.style.display='';
+  document.querySelector('#salesFormCard .btn-outline').textContent='▲ Collapse';
+  body.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function deleteSale(id){confirm2('Delete this sale record?',()=>{sales=sales.filter(s=>s.id!==id);save();renderSalesTable();updateCounts();toast('Sale deleted');})}
+
+function viewSale(id){
+  const r=sales.find(s=>s.id===id);if(!r)return;
+  document.getElementById('viewModalTitle').textContent=`🧾 Sale — ${r.ref||'#'+r.id}`;
+  document.getElementById('viewModalBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      ${detail('Date',fmt(r.date))} ${detail('Reference',r.ref||'—')}
+      ${detail('Customer',r.customer||'—')} ${detail('Contact',r.contact||'—')}
+      ${detail('Service',SERVICE_LABELS[r.type]||r.type||'—')} ${detail('Unit/Model',r.unit||'—')}
+      ${detail('Address',r.address||'—',true)} ${detail('Technician',r.tech||'—')}
+      ${detail('Amount',peso(r.amount),'','color:var(--green);font-weight:700')} ${detail('Payment',PAY_LABELS[r.payment]||r.payment||'—')}
+      ${detail('Parts Cost',peso(r.parts))} ${detail('Labor Fee',peso(r.labor))}
+      ${detail('Status',`<span class="badge ${STATUS_BADGE[r.status]}">${STATUS_LABELS[r.status]||r.status}</span>`,false,'')}
+      ${r.status!=='paid'?detail('Amount Received',peso(r.received)):''}
+      ${r.warranty?detail('Warranty',r.warranty):''}
+      ${r.nextservice?detail('Next Service',fmt(r.nextservice)):''}
+      ${r.notes?`<div style="grid-column:1/-1">${detail('Notes',r.notes,true)}</div>`:''}
+    </div>
+  `;
+  openModal('viewModal');
+}
+
+function detail(label,val,wide=false,style=''){
+  return`<div ${wide?'style="grid-column:1/-1"':''}><div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;margin-bottom:3px">${label}</div><div style="font-size:13px;${style}">${val}</div></div>`;
+}
+
+function renderSalesTable(q=''){
+  const s=q.toLowerCase();
+  const list=[...sales].filter(r=>!s||[r.customer,r.ref,r.address,r.tech,r.unit].join(' ').toLowerCase().includes(s)).sort((a,b)=>b.date?.localeCompare(a.date||''));
+  document.getElementById('salesCount').textContent=`${list.length} record${list.length!==1?'s':''}`;
+  if(!list.length){document.getElementById('salesTable').innerHTML=`<div class="table-empty"><div class="icon">🧾</div><p>No sales records found.</p></div>`;return}
+  const total=list.reduce((s,r)=>s+(+r.amount||0),0);
+  document.getElementById('salesTable').innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Service</th><th>Unit</th><th>Technician</th><th>Payment</th><th>Status</th><th class="td-right">Amount</th><th class="td-center">Actions</th></tr></thead>
+    <tbody>${list.map(r=>`<tr>
+      <td>${fmt(r.date)}</td>
+      <td><span class="badge badge-blue">${r.ref||'—'}</span></td>
+      <td><strong>${r.customer}</strong>${r.contact?`<div style="font-size:11px;color:var(--gray)">${r.contact}</div>`:''}</td>
+      <td><span class="badge badge-green">${SERVICE_LABELS[r.type]||r.type||'—'}</span></td>
+      <td style="font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.unit||'—'}</td>
+      <td style="font-size:12px">${r.tech||'—'}</td>
+      <td><span class="badge badge-gray">${PAY_LABELS[r.payment]||r.payment}</span></td>
+      <td><span class="badge ${STATUS_BADGE[r.status]}">${STATUS_LABELS[r.status]||r.status}</span></td>
+      <td class="td-right" style="font-weight:700;color:var(--green)">${peso(r.amount)}</td>
+      <td class="td-center" style="white-space:nowrap;display:flex;gap:5px;padding:10px 8px">
+        <button class="btn-icon" title="View" onclick="viewSale(${r.id})" style="font-size:13px">👁</button>
+        <button class="btn-icon edit" title="Edit" onclick="editSale(${r.id})" style="font-size:13px">✏️</button>
+        <button class="btn-icon del" title="Delete" onclick="deleteSale(${r.id})" style="font-size:13px">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="8"><strong>Total</strong></td><td class="td-right">${peso(total)}</td><td></td></tr></tfoot>
+  </table>`;
+}
+
+// ============================================================
+// EXPENSES
+// ============================================================
+let editingExp=null;
+
+function openExpenseModal(){showPage('expenses');}
+function saveExpense(){
+  const date=document.getElementById('e_date').value;
+  const supplier=document.getElementById('e_supplier').value.trim();
+  const amount=document.getElementById('e_amount').value;
+  const category=document.getElementById('e_category').value;
+  if(!date||!supplier||!amount||!category)return toast('Fill required fields (Date, Supplier, Amount, Category)','error');
+  const rec={
+    id:editingExp||newId(),date,
+    ref:document.getElementById('e_ref').value.trim(),
+    supplier,category,
+    amount:+amount,
+    payment:document.getElementById('e_payment').value,
+    invoice:document.getElementById('e_invoice').value.trim(),
+    jobref:document.getElementById('e_jobref').value.trim(),
+    desc:document.getElementById('e_desc').value.trim(),
+    taxDeductible:radio('e_tax')==='yes',
+    vat:+document.getElementById('e_vat').value||0,
+    createdAt:editingExp?expenses.find(e=>e.id===editingExp)?.createdAt:new Date().toISOString()
+  };
+  if(editingExp){const idx=expenses.findIndex(e=>e.id===editingExp);if(idx>=0)expenses[idx]=rec;}
+  else expenses.push(rec);
+  save();clearForm('expense');renderExpensesTable();updateCounts();
+  toast(editingExp?'Expense updated!':'Expense saved!');editingExp=null;
+}
+
+function editExpense(id){
+  const r=expenses.find(e=>e.id===id);if(!r)return;
+  editingExp=id;
+  document.getElementById('expFormTitle').textContent='✏️ Edit Expense Record';
+  const fields={e_date:r.date,e_ref:r.ref,e_supplier:r.supplier,e_amount:r.amount,e_invoice:r.invoice,e_jobref:r.jobref,e_desc:r.desc,e_vat:r.vat};
+  Object.entries(fields).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val||'';});
+  document.getElementById('e_category').value=r.category||'';
+  document.getElementById('e_payment').value=r.payment||'cash';
+  const rb=document.querySelector(`input[name="e_tax"][value="${r.taxDeductible?'yes':'no'}"]`);
+  if(rb)rb.checked=true;
+  const body=document.getElementById('expFormBody');body.style.display='';
+  document.querySelector('#expFormCard .btn-outline').textContent='▲ Collapse';
+  body.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function deleteExpense(id){confirm2('Delete this expense record?',()=>{expenses=expenses.filter(e=>e.id!==id);save();renderExpensesTable();updateCounts();toast('Expense deleted');})}
+
+function renderExpensesTable(q=''){
+  const s=q.toLowerCase();
+  const list=[...expenses].filter(r=>!s||[r.supplier,r.ref,r.desc,r.category].join(' ').toLowerCase().includes(s)).sort((a,b)=>b.date?.localeCompare(a.date||''));
+  document.getElementById('expCount').textContent=`${list.length} record${list.length!==1?'s':''}`;
+  if(!list.length){document.getElementById('expensesTable').innerHTML=`<div class="table-empty"><div class="icon">💸</div><p>No expense records found.</p></div>`;return}
+  const total=list.reduce((s,r)=>s+(+r.amount||0),0);
+  document.getElementById('expensesTable').innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Ref</th><th>Paid To</th><th>Category</th><th>Payment</th><th>Job Ref</th><th>Tax Ded.</th><th class="td-right">Amount</th><th class="td-center">Actions</th></tr></thead>
+    <tbody>${list.map(r=>`<tr>
+      <td>${fmt(r.date)}</td>
+      <td><span class="badge badge-amber">${r.ref||'—'}</span></td>
+      <td><strong>${r.supplier}</strong>${r.desc?`<div style="font-size:11px;color:var(--gray)">${r.desc}</div>`:''}</td>
+      <td><span class="badge badge-red">${EXP_LABELS[r.category]||r.category}</span></td>
+      <td><span class="badge badge-gray">${PAY_LABELS[r.payment]||r.payment}</span></td>
+      <td style="font-size:12px;color:var(--blue)">${r.jobref||'—'}</td>
+      <td class="td-center">${r.taxDeductible?'<span class="badge badge-green">Yes</span>':'<span class="badge badge-gray">No</span>'}</td>
+      <td class="td-right" style="font-weight:700;color:var(--red)">${peso(r.amount)}</td>
+      <td class="td-center" style="white-space:nowrap;display:flex;gap:5px;padding:10px 8px">
+        <button class="btn-icon edit" title="Edit" onclick="editExpense(${r.id})" style="font-size:13px">✏️</button>
+        <button class="btn-icon del" title="Delete" onclick="deleteExpense(${r.id})" style="font-size:13px">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="7"><strong>Total</strong></td><td class="td-right">${peso(total)}</td><td></td></tr></tfoot>
+  </table>`;
+}
+
+// ============================================================
+// CUSTOMERS
+// ============================================================
+let editingCust=null;
+let unitEntries=[];
+
+function openCustomerModal(){showPage('customers');}
+
+function addUnit(){
+  unitEntries.push({brand:'',model:'',type:'split',hp:'',serial:'',location:''});
+  renderUnitList();
+}
+
+function removeUnit(i){unitEntries.splice(i,1);renderUnitList();}
+
+function renderUnitList(){
+  const c=document.getElementById('unitList');
+  if(!unitEntries.length){c.innerHTML='<p style="font-size:12px;color:var(--gray)">No units added yet.</p>';return}
+  c.innerHTML=unitEntries.map((u,i)=>`<div style="background:var(--blue-light);border:1px solid var(--blue-light);border-radius:8px;padding:12px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 30px;gap:8px;align-items:end">
+    <div class="field"><label>Brand</label><input type="text" value="${u.brand}" oninput="unitEntries[${i}].brand=this.value" placeholder="e.g. Carrier"></div>
+    <div class="field"><label>Model</label><input type="text" value="${u.model}" oninput="unitEntries[${i}].model=this.value" placeholder="Model no."></div>
+    <div class="field"><label>Type</label>
+      <select oninput="unitEntries[${i}].type=this.value">
+        <option value="split" ${u.type==='split'?'selected':''}>Split Type</option>
+        <option value="window" ${u.type==='window'?'selected':''}>Window Type</option>
+        <option value="cassette" ${u.type==='cassette'?'selected':''}>Cassette</option>
+        <option value="portable" ${u.type==='portable'?'selected':''}>Portable</option>
+        <option value="ref" ${u.type==='ref'?'selected':''}>Refrigerator</option>
+        <option value="freezer" ${u.type==='freezer'?'selected':''}>Freezer</option>
+        <option value="chiller" ${u.type==='chiller'?'selected':''}>Chiller</option>
+      </select>
+    </div>
+    <div class="field"><label>Capacity (HP/BTU)</label><input type="text" value="${u.hp}" oninput="unitEntries[${i}].hp=this.value" placeholder="e.g. 1.5HP"></div>
+    <div class="field"><label>Location in House</label><input type="text" value="${u.location}" oninput="unitEntries[${i}].location=this.value" placeholder="e.g. Master Bedroom"></div>
+    <button class="btn-icon del" onclick="removeUnit(${i})" style="margin-bottom:0;align-self:end">🗑</button>
+  </div>`).join('');
+}
+
+function saveCustomer(){
+  const name=document.getElementById('c_name').value.trim();
+  const mobile=document.getElementById('c_mobile').value.trim();
+  if(!name||!mobile)return toast('Name and mobile number are required','error');
+  const rec={
+    id:editingCust||newId(),name,mobile,
+    landline:document.getElementById('c_landline').value.trim(),
+    email:document.getElementById('c_email').value.trim(),
+    company:document.getElementById('c_company').value.trim(),
+    type:document.getElementById('c_type').value,
+    source:document.getElementById('c_source').value,
+    street:document.getElementById('c_street').value.trim(),
+    barangay:document.getElementById('c_barangay').value.trim(),
+    city:document.getElementById('c_city').value.trim(),
+    province:document.getElementById('c_province').value.trim(),
+    zip:document.getElementById('c_zip').value.trim(),
+    landmark:document.getElementById('c_landmark').value.trim(),
+    notes:document.getElementById('c_notes').value.trim(),
+    units:unitEntries.map(u=>({...u})),
+    createdAt:editingCust?customers.find(c=>c.id===editingCust)?.createdAt:new Date().toISOString()
+  };
+  if(editingCust){const idx=customers.findIndex(c=>c.id===editingCust);if(idx>=0)customers[idx]=rec;}
+  else customers.push(rec);
+  save();clearForm('customer');renderCustomersTable();updateCounts();buildCustomerDatalist();
+  toast(editingCust?'Customer updated!':'Customer saved!');editingCust=null;
+}
+
+function editCustomer(id){
+  const r=customers.find(c=>c.id===id);if(!r)return;
+  editingCust=id;
+  document.getElementById('custFormTitle').textContent='✏️ Edit Customer';
+  const fields={c_name:r.name,c_mobile:r.mobile,c_landline:r.landline,c_email:r.email,c_company:r.company,c_street:r.street,c_barangay:r.barangay,c_city:r.city,c_province:r.province,c_zip:r.zip,c_landmark:r.landmark,c_notes:r.notes};
+  Object.entries(fields).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val||'';});
+  document.getElementById('c_type').value=r.type||'residential';
+  document.getElementById('c_source').value=r.source||'';
+  unitEntries=(r.units||[]).map(u=>({...u}));renderUnitList();
+  const body=document.getElementById('custFormBody');body.style.display='';
+  document.querySelector('#custFormCard .btn-outline').textContent='▲ Collapse';
+  body.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function deleteCustomer(id){confirm2('Delete this customer record?',()=>{customers=customers.filter(c=>c.id!==id);save();renderCustomersTable();updateCounts();toast('Customer deleted');})}
+
+function viewCustomer(id){
+  const r=customers.find(c=>c.id===id);if(!r)return;
+  const addr=[r.street,r.barangay,r.city,r.province,r.zip].filter(Boolean).join(', ');
+  document.getElementById('viewModalTitle').textContent=`👤 ${r.name}`;
+  document.getElementById('viewModalBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      ${detail('Full Name',r.name)} ${detail('Customer Type',`<span class="badge badge-amber">${CUST_TYPE[r.type]||r.type}</span>`)}
+      ${detail('Mobile',r.mobile||'—')} ${detail('Landline',r.landline||'—')}
+      ${detail('Email',r.email||'—')} ${detail('Company',r.company||'—')}
+      ${addr?`<div style="grid-column:1/-1">${detail('Address',addr)}</div>`:''}
+      ${r.landmark?detail('Landmark',r.landmark):''}
+      ${r.units?.length?`<div style="grid-column:1/-1"><div style="font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;margin-bottom:8px">AC / Refrigeration Units</div>
+        ${r.units.map(u=>`<span class="unit-tag">❄️ ${[u.brand,u.model,u.hp,u.type,u.location].filter(Boolean).join(' · ')}</span>`).join('')}</div>`:''}
+      ${r.notes?`<div style="grid-column:1/-1">${detail('Notes',r.notes)}</div>`:''}
+    </div>
+  `;
+  openModal('viewModal');
+}
+
+function buildCustomerDatalist(){
+  document.getElementById('customerList').innerHTML=customers.map(c=>`<option value="${c.name}">`).join('');
+}
+
+function renderCustomersTable(q=''){
+  const s=q.toLowerCase();
+  const list=[...customers].filter(r=>!s||[r.name,r.mobile,r.company,r.city,r.email].join(' ').toLowerCase().includes(s)).sort((a,b)=>a.name?.localeCompare(b.name||''));
+  document.getElementById('custCount').textContent=`${list.length} customer${list.length!==1?'s':''}`;
+  if(!list.length){document.getElementById('customersTable').innerHTML=`<div class="table-empty"><div class="icon">👥</div><p>No customers found.</p></div>`;return}
+  document.getElementById('customersTable').innerHTML=`<table>
+    <thead><tr><th>Name</th><th>Type</th><th>Mobile</th><th>Email</th><th>Address</th><th>Units</th><th class="td-center">Actions</th></tr></thead>
+    <tbody>${list.map(r=>`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="avatar">${(r.name||'?')[0].toUpperCase()}</div><div><strong>${r.name}</strong>${r.company?`<div style="font-size:11px;color:var(--gray)">${r.company}</div>`:''}</div></div></td>
+      <td><span class="badge badge-amber">${CUST_TYPE[r.type]||r.type}</span></td>
+      <td>${r.mobile||'—'}</td>
+      <td style="font-size:12px">${r.email||'—'}</td>
+      <td style="font-size:12px">${[r.barangay,r.city].filter(Boolean).join(', ')||'—'}</td>
+      <td>${r.units?.length?`<span class="badge badge-blue">${r.units.length} unit${r.units.length!==1?'s':''}</span>`:'<span class="badge badge-gray">—</span>'}</td>
+      <td class="td-center" style="white-space:nowrap;display:flex;gap:5px;padding:10px 8px">
+        <button class="btn-icon" title="View" onclick="viewCustomer(${r.id})" style="font-size:13px">👁</button>
+        <button class="btn-icon edit" title="Edit" onclick="editCustomer(${r.id})" style="font-size:13px">✏️</button>
+        <button class="btn-icon del" title="Delete" onclick="deleteCustomer(${r.id})" style="font-size:13px">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ============================================================
+// INVENTORY
+// ============================================================
+let editingInv=null;
+
+function openInventoryModal(){showPage('inventory');}
+function saveInventory(){
+  const name=document.getElementById('i_name').value.trim();
+  const stock=document.getElementById('i_stock').value;
+  const category=document.getElementById('i_category').value;
+  if(!name||stock===''||!category)return toast('Fill required fields (Name, Category, Stock)','error');
+  const rec={
+    id:editingInv||newId(),
+    code:document.getElementById('i_code').value.trim(),
+    name,category,
+    brand:document.getElementById('i_brand').value.trim(),
+    unit:document.getElementById('i_unit').value,
+    stock:+stock,
+    minstock:+document.getElementById('i_minstock').value||5,
+    location:document.getElementById('i_location').value.trim(),
+    cost:+document.getElementById('i_cost').value||0,
+    price:+document.getElementById('i_price').value||0,
+    reorder:+document.getElementById('i_reorder').value||0,
+    supplier:document.getElementById('i_supplier').value.trim(),
+    notes:document.getElementById('i_notes').value.trim(),
+    status:radio('i_status'),
+    restocked:document.getElementById('i_restocked').value,
+    createdAt:editingInv?inventory.find(i=>i.id===editingInv)?.createdAt:new Date().toISOString()
+  };
+  if(editingInv){const idx=inventory.findIndex(i=>i.id===editingInv);if(idx>=0)inventory[idx]=rec;}
+  else inventory.push(rec);
+  save();clearForm('inventory');renderInventoryTable();updateCounts();
+  toast(editingInv?'Item updated!':'Item saved!');editingInv=null;
+}
+
+function editInventory(id){
+  const r=inventory.find(i=>i.id===id);if(!r)return;
+  editingInv=id;
+  document.getElementById('invFormTitle').textContent='✏️ Edit Inventory Item';
+  const fields={i_code:r.code,i_name:r.name,i_brand:r.brand,i_stock:r.stock,i_minstock:r.minstock,i_location:r.location,i_cost:r.cost,i_price:r.price,i_reorder:r.reorder,i_supplier:r.supplier,i_notes:r.notes,i_restocked:r.restocked};
+  Object.entries(fields).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val||'';});
+  document.getElementById('i_category').value=r.category||'';
+  document.getElementById('i_unit').value=r.unit||'pcs';
+  const rb=document.querySelector(`input[name="i_status"][value="${r.status||'active'}"]`);
+  if(rb)rb.checked=true;
+  const body=document.getElementById('invFormBody');body.style.display='';
+  document.querySelector('#invFormCard .btn-outline').textContent='▲ Collapse';
+  body.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function adjustStock(id,delta){
+  const r=inventory.find(i=>i.id===id);if(!r)return;
+  r.stock=Math.max(0,r.stock+delta);
+  save();renderInventoryTable();updateCounts();
+  toast(`Stock ${delta>0?'increased':'decreased'} to ${r.stock}`,'info');
+}
+
+function deleteInventory(id){confirm2('Delete this inventory item?',()=>{inventory=inventory.filter(i=>i.id!==id);save();renderInventoryTable();updateCounts();toast('Item deleted');})}
+
+function renderInventoryTable(q=''){
+  const s=q.toLowerCase();
+  const list=[...inventory].filter(r=>!s||[r.name,r.code,r.brand,r.category,r.supplier].join(' ').toLowerCase().includes(s)).sort((a,b)=>a.name?.localeCompare(b.name||''));
+  document.getElementById('invCount').textContent=`${list.length} item${list.length!==1?'s':''}`;
+  if(!list.length){document.getElementById('inventoryTable').innerHTML=`<div class="table-empty"><div class="icon">📦</div><p>No inventory items found.</p></div>`;return}
+  const totalVal=list.reduce((s,r)=>s+(+r.stock||0)*(+r.cost||0),0);
+  document.getElementById('inventoryTable').innerHTML=`<table>
+    <thead><tr><th>Code</th><th>Item Name</th><th>Category</th><th>Brand</th><th>Unit</th><th class="td-right">Cost</th><th class="td-right">Price</th><th class="td-center">Stock</th><th>Location</th><th>Status</th><th class="td-center">Actions</th></tr></thead>
+    <tbody>${list.map(r=>{
+      const low=+r.stock<=(+r.minstock||5);const out=+r.stock===0;
+      return`<tr>
+        <td><span class="badge badge-gray">${r.code||'—'}</span></td>
+        <td><strong>${r.name}</strong>${r.notes?`<div style="font-size:11px;color:var(--gray);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes}</div>`:''}</td>
+        <td><span class="badge badge-purple">${INV_CAT[r.category]||r.category}</span></td>
+        <td style="font-size:12px">${r.brand||'—'}</td>
+        <td style="font-size:12px">${r.unit}</td>
+        <td class="td-right" style="font-size:12px">${r.cost?peso(r.cost):'—'}</td>
+        <td class="td-right" style="font-size:12px">${r.price?peso(r.price):'—'}</td>
+        <td class="td-center">
+          <div style="display:flex;align-items:center;gap:4px;justify-content:center">
+            <button onclick="adjustStock(${r.id},-1)" style="width:22px;height:22px;border:1px solid var(--border);background:#fff;border-radius:4px;cursor:pointer;font-size:12px;line-height:1">−</button>
+            <span class="${out?'stock-out':low?'stock-low':'stock-high'}" style="min-width:28px;text-align:center">${r.stock}</span>
+            <button onclick="adjustStock(${r.id},1)" style="width:22px;height:22px;border:1px solid var(--border);background:#fff;border-radius:4px;cursor:pointer;font-size:12px;line-height:1">+</button>
+          </div>
+          ${out?'<div style="font-size:10px;color:var(--red)">OUT</div>':low?'<div style="font-size:10px;color:var(--amber)">LOW</div>':''}
+        </td>
+        <td style="font-size:12px">${r.location||'—'}</td>
+        <td><span class="badge ${r.status==='active'?'badge-green':'badge-gray'}">${r.status==='active'?'Active':'Inactive'}</span></td>
+        <td class="td-center" style="white-space:nowrap;display:flex;gap:5px;padding:10px 8px">
+          <button class="btn-icon edit" title="Edit" onclick="editInventory(${r.id})" style="font-size:13px">✏️</button>
+          <button class="btn-icon del" title="Delete" onclick="deleteInventory(${r.id})" style="font-size:13px">🗑</button>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+    <tfoot><tr><td colspan="10"><strong>Total Inventory Value</strong></td><td class="td-right">${peso(totalVal)}</td><td></td></tr></tfoot>
+  </table>`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('headerDate').innerHTML=`<div>${new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>`;
+
+// Set default dates and refs
+document.getElementById('s_date').value=today();
+document.getElementById('s_ref').value=autoRef('INV',sales);
+document.getElementById('e_date').value=today();
+document.getElementById('e_ref').value=autoRef('CV',expenses);
+
+updateCounts();
+renderDashboard();
+buildCustomerDatalist();
+</script>
+</body>
+</html>
