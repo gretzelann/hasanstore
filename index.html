@@ -127,10 +127,20 @@
   .btn-red:hover{background:var(--red-bg);}
 
   /* METRICS */
-  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 20px;flex-shrink:0;}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:16px 20px 0;flex-shrink:0;}
+  .metrics-period{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px 20px 0;flex-shrink:0;}
   .mcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+  .mcard-accent{border-color:var(--green-light);background:var(--green-bg);}
   .mlabel{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
   .mval{font-size:22px;font-weight:700;color:var(--text);}
+  .mval-accent{color:var(--green);}
+  .mval-sm{font-size:16px;}
+
+  /* PERIOD TABS */
+  .period-tabs{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;margin:14px 20px 0;}
+  .ptab{flex:1;padding:6px 4px;font-size:12px;font-weight:500;border-radius:4px;cursor:pointer;border:none;color:var(--text2);background:transparent;transition:all .15s;text-align:center;}
+  .ptab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+  .ptab:hover:not(.active){color:var(--text);}
 
   .sitem{padding:12px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
   .sitem:hover{background:var(--surface2);}
@@ -261,9 +271,20 @@
 
     <!-- SALES PANE -->
     <div class="pane" id="pane-sales" style="background:var(--bg);">
+      <!-- All-time totals -->
       <div class="metrics" id="metrics"></div>
-      <div class="pane-header" style="padding-top:4px;padding-bottom:12px;">
-        <span class="pane-title">Transaction history</span>
+      <!-- Period selector -->
+      <div class="period-tabs">
+        <button class="ptab active" data-p="day"   onclick="setSalesPeriod('day')">📅 Today</button>
+        <button class="ptab"        data-p="week"  onclick="setSalesPeriod('week')">📆 Week</button>
+        <button class="ptab"        data-p="month" onclick="setSalesPeriod('month')">🗓 Month</button>
+        <button class="ptab"        data-p="year"  onclick="setSalesPeriod('year')">📊 Year</button>
+      </div>
+      <!-- Period summary cards -->
+      <div class="metrics-period" id="period-metrics"></div>
+      <!-- Transaction list -->
+      <div class="pane-header" style="padding-top:14px;padding-bottom:10px;">
+        <span class="pane-title" id="period-title">Today's transactions</span>
         <button class="btn btn-red" onclick="clearSales()">🗑 Clear history</button>
       </div>
       <div style="flex:1;overflow-y:auto;" id="sales-list"></div>
@@ -686,20 +707,63 @@ function delProd(id){
   cart=cart.filter(x=>x.id!==id);renderInv();renderProducts();renderCart();renderCats();toast('Product deleted.');
 }
 
+function showReceiptDetail(id){const t=sales.find(x=>x.id===id);if(t)showReceipt(t);}
+function clearSales(){if(!confirm('Clear all sales history?'))return;sales=[];sv('hs_sales',sales);renderSales();toast('Sales history cleared.');}
+
+let salesPeriod='day';
+
+function setSalesPeriod(p){
+  salesPeriod=p;
+  document.querySelectorAll('.ptab').forEach(el=>el.classList.toggle('active',el.dataset.p===p));
+  renderSalesPeriod();
+}
+
+function periodStart(p){
+  const now=new Date();
+  if(p==='day'){const d=new Date(now);d.setHours(0,0,0,0);return d;}
+  if(p==='week'){
+    const d=new Date(now);
+    const day=d.getDay();
+    d.setDate(d.getDate()-(day===0?6:day-1)); // Monday start
+    d.setHours(0,0,0,0);return d;
+  }
+  if(p==='month'){return new Date(now.getFullYear(),now.getMonth(),1);}
+  if(p==='year'){return new Date(now.getFullYear(),0,1);}
+  return new Date(0);
+}
+
+function periodLabel(p){
+  return {day:"Today's",week:"This week's",month:"This month's",year:"This year's"}[p];
+}
+
 function renderSales(){
   const tr=sales.reduce((s,x)=>s+x.total,0);
-  const tt=sales.length;
-  const now=new Date();
-  const ts2=sales.filter(x=>{const d=new Date(x.id);return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth()&&d.getDate()===now.getDate();});
-  const tr2=ts2.reduce((s,x)=>s+x.total,0);
   document.getElementById('metrics').innerHTML=`
-    <div class="mcard"><div class="mlabel">Total revenue</div><div class="mval">${fmt(tr)}</div></div>
-    <div class="mcard"><div class="mlabel">Transactions</div><div class="mval">${tt}</div></div>
-    <div class="mcard"><div class="mlabel">Today's revenue</div><div class="mval">${fmt(tr2)}</div></div>
-    <div class="mcard"><div class="mlabel">Today's sales</div><div class="mval">${ts2.length}</div></div>`;
+    <div class="mcard"><div class="mlabel">All-time revenue</div><div class="mval">${fmt(tr)}</div></div>
+    <div class="mcard"><div class="mlabel">All-time transactions</div><div class="mval">${sales.length}</div></div>`;
+  renderSalesPeriod();
+}
+
+function renderSalesPeriod(){
+  const start=periodStart(salesPeriod);
+  const filtered=sales.filter(x=>new Date(x.id)>=start);
+  const rev=filtered.reduce((s,x)=>s+x.total,0);
+  const label=periodLabel(salesPeriod);
+
+  document.getElementById('period-title').textContent=`${label.replace("'s",'')} transactions`;
+  document.getElementById('period-metrics').innerHTML=`
+    <div class="mcard mcard-accent" style="grid-column:span 2;">
+      <div class="mlabel">${label} revenue</div>
+      <div class="mval mval-accent">${fmt(rev)}</div>
+    </div>
+    <div class="mcard mcard-accent" style="grid-column:span 2;">
+      <div class="mlabel">${label} transactions</div>
+      <div class="mval mval-accent mval-sm">${filtered.length} txn · ${filtered.reduce((a,x)=>a+x.items.reduce((b,i)=>b+i.qty,0),0)} pcs sold</div>
+    </div>`;
+
   const el=document.getElementById('sales-list');
-  if(!sales.length){el.innerHTML=`<div class="empty-state">No sales yet.</div>`;return;}
-  el.innerHTML=sales.map(s=>`<div class="sitem" onclick="showReceiptDetail(${s.id})">
+  if(!filtered.length){el.innerHTML=`<div class="empty-state">No transactions ${salesPeriod==='day'?'today':salesPeriod==='week'?'this week':salesPeriod==='month'?'this month':'this year'}.</div>`;return;}
+  el.innerHTML=filtered.map(s=>`<div class="sitem" onclick="showReceiptDetail(${s.id})">
     <div class="sitem-top">
       <span>${fmt(s.total)}${s.discAmt>0?`<span class="disc-badge">-${fmt(s.discAmt)}</span>`:''}</span>
       <span style="color:var(--text3);font-weight:400;">${s.time}</span>
@@ -707,9 +771,6 @@ function renderSales(){
     <div class="sitem-sub">${s.items.length} item type(s) · ${s.items.reduce((a,i)=>a+i.qty,0)} pcs${s.discount?' · '+s.discount.label:''}</div>
   </div>`).join('');
 }
-
-function showReceiptDetail(id){const t=sales.find(x=>x.id===id);if(t)showReceipt(t);}
-function clearSales(){if(!confirm('Clear all sales history?'))return;sales=[];sv('hs_sales',sales);renderSales();toast('Sales history cleared.');}
 
 function renderPromos(){
   const el=document.getElementById('promo-tbody');
