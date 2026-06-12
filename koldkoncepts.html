@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kold Koncepts – Accounting System</title>
+<style>
+:root {
+  --blue: #1B4DBF;
+  --blue-dark: #163d9e;
+  --blue-light: #e8eeff;
+  --ice: #d6eeff;
+  --green: #1a7a55;
+  --green-light: #e6f5ef;
+  --amber: #b86800;
+  --amber-light: #fff3e0;
+  --red: #c0392b;
+  --red-light: #fdecea;
+  --gray: #6b7280;
+  --gray-light: #f3f4f6;
+  --border: #e0e4ea;
+  --white: #ffffff;
+  --text: #111827;
+  --text-soft: #4b5563;
+  --shadow: 0 2px 8px rgba(0,0,0,.08);
+  --radius: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f4f8;color:var(--text);min-height:100vh}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#0a2a6e,var(--blue));color:#fff;padding:0 24px;display:flex;align-items:center;gap:16px;height:60px;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+header .logo{font-size:22px;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+header .logo span{color:#7dd3fc}
+header .subtitle{font-size:12px;opacity:.75;margin-top:2px}
+header .brand{display:flex;flex-direction:column}
+header .spacer{flex:1}
+header .period-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:4px 14px;font-size:12px;cursor:pointer;transition:.2s}
+header .period-badge:hover{background:rgba(255,255,255,.25)}
+
+/* NAV TABS */
+nav{background:#fff;border-bottom:2px solid var(--border);display:flex;gap:2px;padding:0 16px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:none;padding:12px 16px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-soft);white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s}
+nav button:hover{color:var(--blue)}
+nav button.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+
+/* LAYOUT */
+.main{padding:20px 24px;max-width:1400px;margin:0 auto}
+
+/* CARDS */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-header h3{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card-body{padding:18px}
+
+/* SUMMARY GRID */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.summary-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);padding:16px 18px;box-shadow:var(--shadow)}
+.summary-card .label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:6px}
+.summary-card .amount{font-size:22px;font-weight:700}
+.summary-card .sub{font-size:11px;color:var(--gray);margin-top:4px}
+.summary-card.blue .amount{color:var(--blue)}
+.summary-card.green .amount{color:var(--green)}
+.summary-card.red .amount{color:var(--red)}
+.summary-card.amber .amount{color:var(--amber)}
+
+/* TABLES */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--blue);color:#fff;padding:9px 12px;text-align:left;font-weight:600;font-size:12px;letter-spacing:.3px;white-space:nowrap}
+thead th:first-child{border-radius:6px 0 0 0}
+thead th:last-child{border-radius:0 6px 0 0}
+tbody tr{border-bottom:1px solid var(--border)}
+tbody tr:hover{background:var(--blue-light)}
+tbody td{padding:9px 12px;vertical-align:middle}
+tbody tr:last-child{border-bottom:none}
+.td-right{text-align:right;font-variant-numeric:tabular-nums}
+.td-center{text-align:center}
+tfoot td{padding:9px 12px;font-weight:700;border-top:2px solid var(--blue);background:var(--blue-light)}
+
+/* FORMS */
+.form-row{display:grid;gap:12px;margin-bottom:12px}
+.form-row.cols2{grid-template-columns:1fr 1fr}
+.form-row.cols3{grid-template-columns:1fr 1fr 1fr}
+.form-row.cols4{grid-template-columns:1fr 1fr 1fr 1fr}
+label{font-size:12px;font-weight:600;color:var(--text-soft);display:block;margin-bottom:4px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);background:#fff;transition:.15s;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,77,191,.12)}
+textarea{resize:vertical;min-height:60px}
+.input-group{position:relative}
+.input-group .prefix{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gray);font-size:13px;pointer-events:none}
+.input-group input{padding-left:26px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#156044}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#a93226}
+.btn-ghost{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+.btn-ghost:hover{background:var(--blue-light)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-icon{width:30px;height:30px;padding:0;justify-content:center;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--gray);font-size:14px;transition:.15s}
+.btn-icon:hover{background:var(--red-light);color:var(--red);border-color:var(--red)}
+.btn-icon.edit:hover{background:var(--blue-light);color:var(--blue);border-color:var(--blue)}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-amber{background:var(--amber-light);color:var(--amber)}
+.badge-gray{background:var(--gray-light);color:var(--gray)}
+
+/* DEBIT/CREDIT COLS */
+.dr{color:var(--blue);font-weight:600}
+.cr{color:var(--green);font-weight:600}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:10px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:16px;font-weight:700}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+.close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);line-height:1;padding:2px 6px}
+.close-btn:hover{color:var(--red)}
+
+/* JOURNAL ENTRY LINES */
+.je-lines{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin:12px 0}
+.je-line{display:grid;grid-template-columns:180px 1fr 110px 110px 36px;gap:0;border-bottom:1px solid var(--border);align-items:center}
+.je-line:last-child{border-bottom:none}
+.je-line input,
+.je-line select{border:none;border-radius:0;border-right:1px solid var(--border)}
+.je-line input:focus,
+.je-line select:focus{box-shadow:none;background:var(--blue-light)}
+.je-line .del-line{display:flex;align-items:center;justify-content:center;height:38px;width:36px;cursor:pointer;color:var(--gray);font-size:16px;transition:.15s}
+.je-line .del-line:hover{color:var(--red);background:var(--red-light)}
+.je-line-header{background:var(--gray-light);font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.4px;padding:6px 10px}
+.je-totals{display:grid;grid-template-columns:180px 1fr 110px 110px 36px;background:var(--blue-light);font-weight:700;font-size:13px}
+.je-totals .t{padding:8px 10px;border-right:1px solid var(--border)}
+.je-totals .t.balance{color:var(--green)}
+.je-totals .t.unbalanced{color:var(--red)}
+
+/* LEDGER T-ACCOUNT */
+.ledger-account{border:1px solid var(--border);border-radius:8px;margin-bottom:16px;overflow:hidden}
+.ledger-account-header{background:var(--blue);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px}
+.ledger-cols{display:grid;grid-template-columns:1fr 1fr}
+.ledger-side{padding:0}
+.ledger-side-header{background:var(--blue-light);color:var(--blue);font-size:11px;font-weight:700;padding:6px 12px;text-transform:uppercase;letter-spacing:.4px;text-align:center;border-bottom:1px solid var(--border)}
+.ledger-entry{display:grid;grid-template-columns:90px 1fr auto;padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px}
+.ledger-entry:last-child{border-bottom:none}
+.ledger-balance{background:var(--blue-light);padding:8px 12px;font-weight:700;font-size:13px;display:flex;justify-content:space-between;border-top:2px solid var(--blue)}
+
+/* TRIAL BALANCE */
+.tb-section{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--gray);padding:8px 12px;background:var(--gray-light);letter-spacing:.4px}
+
+/* REPORTS */
+.report-section{margin-bottom:24px}
+.report-section h4{font-size:13px;font-weight:700;color:var(--blue);border-bottom:2px solid var(--blue);padding-bottom:6px;margin-bottom:10px;display:flex;justify-content:space-between}
+.report-row{display:flex;justify-content:space-between;padding:6px 12px;font-size:13px;border-bottom:1px solid var(--border)}
+.report-row:last-child{border-bottom:none}
+.report-row.indent{padding-left:28px;color:var(--text-soft)}
+.report-row.subtotal{font-weight:700;background:var(--gray-light)}
+.report-row.total{font-weight:800;background:var(--blue-light);color:var(--blue)}
+.report-row.net-income{font-weight:800;background:var(--green);color:#fff;border-radius:4px;margin-top:8px}
+.report-row.net-loss{font-weight:800;background:var(--red);color:#fff;border-radius:4px;margin-top:8px}
+
+/* TABS content */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* SECTION TOOLBAR */
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar .spacer{flex:1}
+
+/* CHART OF ACCOUNTS TREE */
+.coa-group{margin-bottom:16px}
+.coa-group-header{background:var(--blue);color:#fff;padding:8px 14px;border-radius:6px 6px 0 0;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.coa-row{display:grid;grid-template-columns:90px 1fr 120px 90px 80px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);font-size:13px;background:#fff}
+.coa-row:hover{background:var(--blue-light)}
+.coa-row:last-child{border-bottom:none}
+.coa-indent{padding-left:28px}
+
+/* Empty state */
+.empty{text-align:center;padding:40px 20px;color:var(--gray)}
+.empty .icon{font-size:40px;margin-bottom:10px}
+.empty p{font-size:14px}
+
+/* Print */
+@media print{
+  header,nav,.toolbar,.btn,button{display:none!important}
+  .modal-bg{display:none!important}
+  body{background:#fff}
+  .card{box-shadow:none;border:none}
+}
+
+/* Responsive */
+@media(max-width:768px){
+  .form-row.cols2,.form-row.cols3,.form-row.cols4{grid-template-columns:1fr}
+  .main{padding:12px}
+  .summary-grid{grid-template-columns:1fr 1fr}
+  .je-line{grid-template-columns:1fr 1fr 90px 90px 36px}
+  nav button{padding:10px 12px;font-size:12px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:28px">❄️</div>
+  <div class="brand">
+    <div class="logo">Kold <span>Koncepts</span></div>
+    <div class="subtitle">Refrigeration &amp; Air Conditioning · Accounting System</div>
+  </div>
+  <div class="spacer"></div>
+  <div style="text-align:right;font-size:12px;opacity:.8" id="headerDate"></div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('dashboard')">📊 Dashboard</button>
+  <button onclick="showTab('journal')">📔 General Journal</button>
+  <button onclick="showTab('ledger')">📒 General Ledger</button>
+  <button onclick="showTab('crj')">💵 Cash Receipts</button>
+  <button onclick="showTab('cdj')">💸 Cash Disbursements</button>
+  <button onclick="showTab('sj')">🧾 Sales Journal</button>
+  <button onclick="showTab('pj')">🛒 Purchase Journal</button>
+  <button onclick="showTab('tb')">⚖️ Trial Balance</button>
+  <button onclick="showTab('reports')">📈 Financial Reports</button>
+  <button onclick="showTab('coa')">🗂️ Chart of Accounts</button>
+</nav>
+
+<div class="main">
+
+<!-- ========== DASHBOARD ========== -->
+<div class="tab-content active" id="tab-dashboard">
+  <div class="summary-grid" id="dashCards"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="dashGrids">
+    <div class="card">
+      <div class="card-header"><h3>💰 Recent Journal Entries</h3></div>
+      <div class="card-body" style="padding:0"><div class="table-wrap" id="dashJournal"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>🔔 Account Balances Snapshot</h3></div>
+      <div class="card-body" style="padding:0"><div class="table-wrap" id="dashBalances"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== GENERAL JOURNAL ========== -->
+<div class="tab-content" id="tab-journal">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">📔 General Journal</h2>
+    <div class="spacer"></div>
+    <input type="text" placeholder="Search entries…" style="width:200px" oninput="renderJournal(this.value)">
+    <button class="btn btn-primary" onclick="openJournalModal()">+ New Entry</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap" id="journalTable"></div>
+  </div>
+</div>
+
+<!-- ========== GENERAL LEDGER ========== -->
+<div class="tab-content" id="tab-ledger">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">📒 General Ledger</h2>
+    <div class="spacer"></div>
+    <select id="ledgerFilter" onchange="renderLedger()" style="width:240px">
+      <option value="">— All Accounts —</option>
+    </select>
+  </div>
+  <div id="ledgerContent"></div>
+</div>
+
+<!-- ========== CASH RECEIPTS JOURNAL ========== -->
+<div class="tab-content" id="tab-crj">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">💵 Cash Receipts Journal</h2>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openCRJModal()">+ Record Receipt</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap" id="crjTable"></div>
+  </div>
+</div>
+
+<!-- ========== CASH DISBURSEMENTS JOURNAL ========== -->
+<div class="tab-content" id="tab-cdj">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">💸 Cash Disbursements Journal</h2>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openCDJModal()">+ Record Disbursement</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap" id="cdjTable"></div>
+  </div>
+</div>
+
+<!-- ========== SALES JOURNAL ========== -->
+<div class="tab-content" id="tab-sj">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">🧾 Sales Journal</h2>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openSJModal()">+ Record Sale</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap" id="sjTable"></div>
+  </div>
+</div>
+
+<!-- ========== PURCHASE JOURNAL ========== -->
+<div class="tab-content" id="tab-pj">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">🛒 Purchase Journal</h2>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openPJModal()">+ Record Purchase</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap" id="pjTable"></div>
+  </div>
+</div>
+
+<!-- ========== TRIAL BALANCE ========== -->
+<div class="tab-content" id="tab-tb">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">⚖️ Trial Balance</h2>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="window.print()">🖨️ Print</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap" id="tbTable"></div>
+  </div>
+</div>
+
+<!-- ========== FINANCIAL REPORTS ========== -->
+<div class="tab-content" id="tab-reports">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">📈 Financial Reports</h2>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="window.print()">🖨️ Print</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-header"><h3>📊 Income Statement</h3><span style="font-size:11px;color:var(--gray)" id="isDate"></span></div>
+      <div class="card-body" id="incomeStatement"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3>🏦 Balance Sheet</h3><span style="font-size:11px;color:var(--gray)" id="bsDate"></span></div>
+      <div class="card-body" id="balanceSheet"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CHART OF ACCOUNTS ========== -->
+<div class="tab-content" id="tab-coa">
+  <div class="toolbar">
+    <h2 style="font-size:18px;font-weight:700">🗂️ Chart of Accounts</h2>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openCOAModal()">+ Add Account</button>
+  </div>
+  <div id="coaContent"></div>
+</div>
+
+</div><!-- /main -->
+
+<!-- =================== MODALS =================== -->
+
+<!-- General Journal Modal -->
+<div class="modal-bg" id="journalModal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <h3 id="journalModalTitle">New Journal Entry</h3>
+      <button class="close-btn" onclick="closeModal('journalModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row cols2">
+        <div><label>Date</label><input type="date" id="je_date"></div>
+        <div><label>Reference No.</label><input type="text" id="je_ref" placeholder="e.g. JE-001"></div>
+      </div>
+      <div class="form-row">
+        <div><label>Description / Memo</label><input type="text" id="je_desc" placeholder="Transaction description"></div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label style="margin:0">Journal Entry Lines</label>
+          <button class="btn btn-ghost btn-sm" onclick="addJELine()">+ Add Line</button>
+        </div>
+        <div class="je-lines">
+          <div class="je-line" style="background:var(--gray-light)">
+            <div class="je-line-header">Account</div>
+            <div class="je-line-header">Description</div>
+            <div class="je-line-header">Debit (Dr)</div>
+            <div class="je-line-header">Credit (Cr)</div>
+            <div class="je-line-header"></div>
+          </div>
+          <div id="jeLines"></div>
+        </div>
+        <div class="je-totals" id="jeTotals">
+          <div class="t">Totals</div>
+          <div class="t"></div>
+          <div class="t" id="jeTotalDr">₱ 0.00</div>
+          <div class="t" id="jeTotalCr">₱ 0.00</div>
+          <div class="t"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('journalModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveJournalEntry()">Post Entry</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cash Receipts Modal -->
+<div class="modal-bg" id="crjModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Record Cash Receipt</h3>
+      <button class="close-btn" onclick="closeModal('crjModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row cols2">
+        <div><label>Date</label><input type="date" id="crj_date"></div>
+        <div><label>OR Number</label><input type="text" id="crj_ref" placeholder="e.g. OR-0001"></div>
+      </div>
+      <div class="form-row cols2">
+        <div><label>Received From</label><input type="text" id="crj_from" placeholder="Customer / Source"></div>
+        <div><label>Amount Received</label>
+          <div class="input-group"><span class="prefix">₱</span><input type="number" id="crj_amount" min="0" step="0.01"></div>
+        </div>
+      </div>
+      <div class="form-row cols2">
+        <div><label>Debit Account (Cash goes to)</label>
+          <select id="crj_debit"><option value="">Select account…</option></select></div>
+        <div><label>Credit Account (Source of cash)</label>
+          <select id="crj_credit"><option value="">Select account…</option></select></div>
+      </div>
+      <div class="form-row">
+        <div><label>Description</label><input type="text" id="crj_desc" placeholder="Details of receipt"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('crjModal')">Cancel</button>
+      <button class="btn btn-success" onclick="saveCRJ()">Record Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cash Disbursements Modal -->
+<div class="modal-bg" id="cdjModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Record Cash Disbursement</h3>
+      <button class="close-btn" onclick="closeModal('cdjModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row cols2">
+        <div><label>Date</label><input type="date" id="cdj_date"></div>
+        <div><label>Check / Voucher No.</label><input type="text" id="cdj_ref" placeholder="e.g. CV-0001"></div>
+      </div>
+      <div class="form-row cols2">
+        <div><label>Paid To</label><input type="text" id="cdj_to" placeholder="Supplier / Payee"></div>
+        <div><label>Amount Paid</label>
+          <div class="input-group"><span class="prefix">₱</span><input type="number" id="cdj_amount" min="0" step="0.01"></div>
+        </div>
+      </div>
+      <div class="form-row cols2">
+        <div><label>Debit Account (Expense / Asset)</label>
+          <select id="cdj_debit"><option value="">Select account…</option></select></div>
+        <div><label>Credit Account (Cash goes out of)</label>
+          <select id="cdj_credit"><option value="">Select account…</option></select></div>
+      </div>
+      <div class="form-row">
+        <div><label>Description</label><input type="text" id="cdj_desc" placeholder="Details of payment"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('cdjModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="saveCDJ()">Record Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sales Journal Modal -->
+<div class="modal-bg" id="sjModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Record Sale / Service Invoice</h3>
+      <button class="close-btn" onclick="closeModal('sjModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row cols2">
+        <div><label>Date</label><input type="date" id="sj_date"></div>
+        <div><label>Invoice No.</label><input type="text" id="sj_ref" placeholder="e.g. INV-0001"></div>
+      </div>
+      <div class="form-row cols2">
+        <div><label>Customer Name</label><input type="text" id="sj_customer" placeholder="Customer"></div>
+        <div><label>Service / Item</label>
+          <select id="sj_type">
+            <option value="installation">AC Installation</option>
+            <option value="repair">AC Repair</option>
+            <option value="cleaning">AC Cleaning / PM</option>
+            <option value="refrigeration">Refrigeration Repair</option>
+            <option value="parts">Parts Sale</option>
+            <option value="other">Other Service</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row cols2">
+        <div><label>Amount</label>
+          <div class="input-group"><span class="prefix">₱</span><input type="number" id="sj_amount" min="0" step="0.01"></div>
+        </div>
+        <div><label>Payment Mode</label>
+          <select id="sj_payment">
+            <option value="cash">Cash</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="gcash">GCash</option>
+            <option value="credit">On Credit (A/R)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div><label>Description / Notes</label><input type="text" id="sj_desc" placeholder="Job details, address, unit model, etc."></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('sjModal')">Cancel</button>
+      <button class="btn btn-success" onclick="saveSJ()">Post Sale</button>
+    </div>
+  </div>
+</div>
+
+<!-- Purchase Journal Modal -->
+<div class="modal-bg" id="pjModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Record Purchase</h3>
+      <button class="close-btn" onclick="closeModal('pjModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row cols2">
+        <div><label>Date</label><input type="date" id="pj_date"></div>
+        <div><label>Invoice / DR No.</label><input type="text" id="pj_ref" placeholder="e.g. SI-0001"></div>
+      </div>
+      <div class="form-row cols2">
+        <div><label>Supplier</label><input type="text" id="pj_supplier" placeholder="Supplier name"></div>
+        <div><label>Category</label>
+          <select id="pj_type">
+            <option value="parts">Parts & Materials</option>
+            <option value="equipment">Tools & Equipment</option>
+            <option value="supplies">Office Supplies</option>
+            <option value="fuel">Fuel & Transportation</option>
+            <option value="utilities">Utilities</option>
+            <option value="other">Other Expense</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row cols2">
+        <div><label>Amount</label>
+          <div class="input-group"><span class="prefix">₱</span><input type="number" id="pj_amount" min="0" step="0.01"></div>
+        </div>
+        <div><label>Payment Mode</label>
+          <select id="pj_payment">
+            <option value="cash">Cash</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="credit">On Credit (A/P)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div><label>Description / Notes</label><input type="text" id="pj_desc" placeholder="Details of purchase"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('pjModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="savePJ()">Post Purchase</button>
+    </div>
+  </div>
+</div>
+
+<!-- COA Modal -->
+<div class="modal-bg" id="coaModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3 id="coaModalTitle">Add Account</h3>
+      <button class="close-btn" onclick="closeModal('coaModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row cols2">
+        <div><label>Account Code</label><input type="text" id="coa_code" placeholder="e.g. 1010"></div>
+        <div><label>Account Type</label>
+          <select id="coa_type">
+            <option value="asset">Asset</option>
+            <option value="liability">Liability</option>
+            <option value="equity">Equity</option>
+            <option value="income">Income / Revenue</option>
+            <option value="expense">Expense</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div><label>Account Name</label><input type="text" id="coa_name" placeholder="e.g. Cash on Hand"></div>
+      </div>
+      <div class="form-row">
+        <div><label>Normal Balance</label>
+          <select id="coa_normal">
+            <option value="debit">Debit</option>
+            <option value="credit">Credit</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('coaModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCOA()">Save Account</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA STORE =====================
+const STORE = {
+  get(k){try{return JSON.parse(localStorage.getItem('kk_'+k))||null}catch{return null}},
+  set(k,v){localStorage.setItem('kk_'+k,JSON.stringify(v))}
+};
+
+// ===================== DEFAULT CHART OF ACCOUNTS =====================
+const DEFAULT_COA = [
+  // Assets
+  {code:'1000',name:'Cash on Hand',type:'asset',normal:'debit'},
+  {code:'1010',name:'Cash in Bank',type:'asset',normal:'debit'},
+  {code:'1100',name:'Accounts Receivable',type:'asset',normal:'debit'},
+  {code:'1200',name:'Parts & Materials Inventory',type:'asset',normal:'debit'},
+  {code:'1300',name:'Prepaid Expenses',type:'asset',normal:'debit'},
+  {code:'1500',name:'Tools & Equipment',type:'asset',normal:'debit'},
+  {code:'1510',name:'Accumulated Depreciation',type:'asset',normal:'credit'},
+  // Liabilities
+  {code:'2000',name:'Accounts Payable',type:'liability',normal:'credit'},
+  {code:'2100',name:'Accrued Expenses',type:'liability',normal:'credit'},
+  {code:'2200',name:'Loans Payable',type:'liability',normal:'credit'},
+  {code:'2300',name:'VAT Payable',type:'liability',normal:'credit'},
+  // Equity
+  {code:'3000',name:"Owner's Capital",type:'equity',normal:'credit'},
+  {code:'3100',name:"Owner's Drawing",type:'equity',normal:'debit'},
+  {code:'3200',name:'Retained Earnings',type:'equity',normal:'credit'},
+  // Income
+  {code:'4000',name:'Service Revenue – Installation',type:'income',normal:'credit'},
+  {code:'4010',name:'Service Revenue – Repair',type:'income',normal:'credit'},
+  {code:'4020',name:'Service Revenue – Cleaning/PM',type:'income',normal:'credit'},
+  {code:'4030',name:'Service Revenue – Refrigeration',type:'income',normal:'credit'},
+  {code:'4040',name:'Parts Sales Revenue',type:'income',normal:'credit'},
+  {code:'4050',name:'Other Income',type:'income',normal:'credit'},
+  // Expenses
+  {code:'5000',name:'Cost of Parts Sold',type:'expense',normal:'debit'},
+  {code:'5100',name:'Labor / Wages Expense',type:'expense',normal:'debit'},
+  {code:'5200',name:'Rent Expense',type:'expense',normal:'debit'},
+  {code:'5300',name:'Utilities Expense',type:'expense',normal:'debit'},
+  {code:'5400',name:'Fuel & Transportation Expense',type:'expense',normal:'debit'},
+  {code:'5500',name:'Supplies Expense',type:'expense',normal:'debit'},
+  {code:'5600',name:'Advertising Expense',type:'expense',normal:'debit'},
+  {code:'5700',name:'Depreciation Expense',type:'expense',normal:'debit'},
+  {code:'5800',name:'Miscellaneous Expense',type:'expense',normal:'debit'},
+];
+
+// ===================== STATE =====================
+let accounts = STORE.get('coa') || DEFAULT_COA.map((a,i)=>({...a,id:i+1}));
+let journalEntries = STORE.get('journal') || [];
+let crjEntries = STORE.get('crj') || [];
+let cdjEntries = STORE.get('cdj') || [];
+let sjEntries = STORE.get('sj') || [];
+let pjEntries = STORE.get('pj') || [];
+let nextId = STORE.get('nextId') || 100;
+let editingJE = null;
+
+function save(){
+  STORE.set('coa',accounts);
+  STORE.set('journal',journalEntries);
+  STORE.set('crj',crjEntries);
+  STORE.set('cdj',cdjEntries);
+  STORE.set('sj',sjEntries);
+  STORE.set('pj',pjEntries);
+  STORE.set('nextId',nextId);
+}
+
+function newId(){return nextId++}
+
+// ===================== UTILS =====================
+function peso(n){return '₱ '+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function today(){return new Date().toISOString().split('T')[0]}
+function fmtDate(d){if(!d)return'';const p=d.split('-');return`${p[2]}/${p[1]}/${p[0]}`}
+function toast(msg,type='success'){
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:24px;right:24px;z-index:9999;background:${type==='error'?'#c0392b':'#1a7a55'};color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.25);animation:fadeIn .3s`;
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+// ===================== TAB NAVIGATION =====================
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>{
+    if(b.getAttribute('onclick')===`showTab('${id}')`)b.classList.add('active');
+  });
+  if(id==='dashboard')renderDashboard();
+  if(id==='journal')renderJournal();
+  if(id==='ledger')renderLedger();
+  if(id==='crj')renderCRJ();
+  if(id==='cdj')renderCDJ();
+  if(id==='sj')renderSJ();
+  if(id==='pj')renderPJ();
+  if(id==='tb')renderTrialBalance();
+  if(id==='reports')renderReports();
+  if(id==='coa')renderCOA();
+}
+
+// ===================== MODAL =====================
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function openModal(id){document.getElementById(id).classList.add('open')}
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+
+// ===================== ACCOUNT HELPERS =====================
+function getAccount(id){return accounts.find(a=>a.id===id||a.code===id)}
+function acctName(id){const a=getAccount(id);return a?`${a.code} – ${a.name}`:id}
+function acctOpts(filter=''){
+  return accounts
+    .filter(a=>!filter||a.type===filter)
+    .sort((a,b)=>a.code.localeCompare(b.code))
+    .map(a=>`<option value="${a.id}">${a.code} – ${a.name}</option>`)
+    .join('');
+}
+function populateAccountSelects(){
+  const all = `<option value="">Select account…</option>`+acctOpts();
+  ['crj_debit','crj_credit','cdj_debit','cdj_credit'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.innerHTML=all;
+  });
+  // Ledger filter
+  const lf=document.getElementById('ledgerFilter');
+  if(lf) lf.innerHTML=`<option value="">— All Accounts —</option>`+acctOpts();
+}
+
+// ===================== LEDGER CALCULATIONS =====================
+function getAllPostings(){
+  // Gather all debit/credit postings from all journals
+  const postings=[];
+  journalEntries.forEach(je=>{
+    je.lines.forEach(ln=>{
+      if(ln.debit)postings.push({date:je.date,ref:je.ref,desc:ln.desc||je.desc,accountId:ln.accountId,debit:+ln.debit,credit:0,source:'GJ'});
+      if(ln.credit)postings.push({date:je.date,ref:je.ref,desc:ln.desc||je.desc,accountId:ln.accountId,debit:0,credit:+ln.credit,source:'GJ'});
+    });
+  });
+  crjEntries.forEach(r=>{
+    postings.push({date:r.date,ref:r.ref,desc:r.desc||'Cash Receipt',accountId:r.debitId,debit:+r.amount,credit:0,source:'CRJ'});
+    postings.push({date:r.date,ref:r.ref,desc:r.desc||'Cash Receipt',accountId:r.creditId,debit:0,credit:+r.amount,source:'CRJ'});
+  });
+  cdjEntries.forEach(r=>{
+    postings.push({date:r.date,ref:r.ref,desc:r.desc||'Cash Disbursement',accountId:r.debitId,debit:+r.amount,credit:0,source:'CDJ'});
+    postings.push({date:r.date,ref:r.ref,desc:r.desc||'Cash Disbursement',accountId:r.creditId,debit:0,credit:+r.amount,source:'CDJ'});
+  });
+  sjEntries.forEach(s=>{
+    // Debit: Cash/AR, Credit: Revenue
+    postings.push({date:s.date,ref:s.ref,desc:s.desc||'Sale',accountId:s.debitId,debit:+s.amount,credit:0,source:'SJ'});
+    postings.push({date:s.date,ref:s.ref,desc:s.desc||'Sale',accountId:s.creditId,debit:0,credit:+s.amount,source:'SJ'});
+  });
+  pjEntries.forEach(p=>{
+    postings.push({date:p.date,ref:p.ref,desc:p.desc||'Purchase',accountId:p.debitId,debit:+p.amount,credit:0,source:'PJ'});
+    postings.push({date:p.date,ref:p.ref,desc:p.desc||'Purchase',accountId:p.creditId,debit:0,credit:+p.amount,source:'PJ'});
+  });
+  return postings;
+}
+
+function getAccountBalance(accountId){
+  const postings=getAllPostings().filter(p=>p.accountId==accountId);
+  const dr=postings.reduce((s,p)=>s+p.debit,0);
+  const cr=postings.reduce((s,p)=>s+p.credit,0);
+  const acct=getAccount(accountId);
+  if(!acct)return{dr,cr,balance:dr-cr};
+  const balance=acct.normal==='debit'?dr-cr:cr-dr;
+  return{dr,cr,balance};
+}
+
+// ===================== DASHBOARD =====================
+function renderDashboard(){
+  const postings=getAllPostings();
+  // Cash balances
+  const cashHand=getAccountBalance(accounts.find(a=>a.code==='1000')?.id);
+  const cashBank=getAccountBalance(accounts.find(a=>a.code==='1010')?.id);
+  const ar=getAccountBalance(accounts.find(a=>a.code==='1100')?.id);
+  const ap=getAccountBalance(accounts.find(a=>a.code==='2000')?.id);
+  // Revenue (sum all income accounts)
+  const revenue=accounts.filter(a=>a.type==='income').reduce((s,a)=>s+getAccountBalance(a.id).balance,0);
+  // Expenses
+  const expenses=accounts.filter(a=>a.type==='expense').reduce((s,a)=>s+getAccountBalance(a.id).balance,0);
+  const netIncome=revenue-expenses;
+
+  document.getElementById('dashCards').innerHTML=`
+    <div class="summary-card blue"><div class="label">Cash on Hand</div><div class="amount">${peso(cashHand.balance)}</div><div class="sub">1000</div></div>
+    <div class="summary-card blue"><div class="label">Cash in Bank</div><div class="amount">${peso(cashBank.balance)}</div><div class="sub">1010</div></div>
+    <div class="summary-card amber"><div class="label">Accounts Receivable</div><div class="amount">${peso(ar.balance)}</div><div class="sub">1100</div></div>
+    <div class="summary-card red"><div class="label">Accounts Payable</div><div class="amount">${peso(ap.balance)}</div><div class="sub">2000</div></div>
+    <div class="summary-card green"><div class="label">Total Revenue</div><div class="amount">${peso(revenue)}</div><div class="sub">All income accounts</div></div>
+    <div class="summary-card ${netIncome>=0?'green':'red'}"><div class="label">Net Income</div><div class="amount">${peso(netIncome)}</div><div class="sub">${netIncome>=0?'Profit':'Loss'}</div></div>
+  `;
+
+  // Recent journal entries
+  const recent=[...journalEntries,...crjEntries.map(r=>({...r,_src:'CRJ'})),...cdjEntries.map(r=>({...r,_src:'CDJ'})),...sjEntries.map(r=>({...r,_src:'SJ'})),...pjEntries.map(r=>({...r,_src:'PJ'}))]
+    .sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+
+  if(recent.length===0){
+    document.getElementById('dashJournal').innerHTML=`<div class="empty"><div class="icon">📔</div><p>No entries yet</p></div>`;
+  } else {
+    document.getElementById('dashJournal').innerHTML=`<table>
+      <thead><tr><th>Date</th><th>Ref</th><th>Description</th><th class="td-right">Amount</th></tr></thead>
+      <tbody>${recent.map(r=>`<tr>
+        <td>${fmtDate(r.date)}</td>
+        <td><span class="badge badge-blue">${r.ref||'—'}</span></td>
+        <td>${r.desc||'—'}</td>
+        <td class="td-right">${peso(r.amount||r.lines?.reduce((s,l)=>s+Math.max(+l.debit||0,+l.credit||0),0)||0)}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+
+  // Account balances snapshot (non-zero)
+  const nonZero=accounts.filter(a=>{const b=getAccountBalance(a.id);return Math.abs(b.balance)>0.001;}).slice(0,12);
+  if(nonZero.length===0){
+    document.getElementById('dashBalances').innerHTML=`<div class="empty"><div class="icon">📊</div><p>No balances yet</p></div>`;
+  } else {
+    document.getElementById('dashBalances').innerHTML=`<table>
+      <thead><tr><th>Code</th><th>Account</th><th class="td-right">Balance</th></tr></thead>
+      <tbody>${nonZero.map(a=>{const b=getAccountBalance(a.id);return`<tr>
+        <td><span class="badge badge-gray">${a.code}</span></td>
+        <td>${a.name}</td>
+        <td class="td-right" style="color:${b.balance>=0?'var(--blue)':'var(--red)'}">${peso(b.balance)}</td>
+      </tr>`}).join('')}</tbody>
+    </table>`;
+  }
+}
+
+// ===================== JOURNAL ENTRY =====================
+let jeLines=[];
+
+function openJournalModal(id=null){
+  editingJE=id;
+  document.getElementById('journalModalTitle').textContent=id?'Edit Journal Entry':'New Journal Entry';
+  document.getElementById('je_date').value=today();
+  document.getElementById('je_ref').value=id?'':autoRef('JE',journalEntries);
+  document.getElementById('je_desc').value='';
+  jeLines=[{accountId:'',desc:'',debit:'',credit:''},{accountId:'',desc:'',debit:'',credit:''}];
+  if(id){
+    const je=journalEntries.find(j=>j.id===id);
+    if(je){
+      document.getElementById('je_date').value=je.date;
+      document.getElementById('je_ref').value=je.ref;
+      document.getElementById('je_desc').value=je.desc;
+      jeLines=je.lines.map(l=>({...l}));
+    }
+  }
+  renderJELines();
+  openModal('journalModal');
+}
+
+function autoRef(prefix,arr){
+  const max=arr.reduce((m,e)=>{const n=parseInt((e.ref||'').replace(/\D/g,''));return Math.max(m,n||0)},0);
+  return`${prefix}-${String(max+1).padStart(4,'0')}`;
+}
+
+function addJELine(){
+  jeLines.push({accountId:'',desc:'',debit:'',credit:''});
+  renderJELines();
+}
+
+function removeJELine(i){
+  if(jeLines.length<=2)return toast('Need at least 2 lines','error');
+  jeLines.splice(i,1);
+  renderJELines();
+}
+
+function renderJELines(){
+  const container=document.getElementById('jeLines');
+  container.innerHTML=jeLines.map((ln,i)=>`
+    <div class="je-line">
+      <select onchange="jeLines[${i}].accountId=this.value;updateJETotals()" style="padding:8px 6px">
+        <option value="">Select account…</option>
+        ${accounts.sort((a,b)=>a.code.localeCompare(b.code)).map(a=>`<option value="${a.id}" ${a.id==ln.accountId?'selected':''}>${a.code} – ${a.name}</option>`).join('')}
+      </select>
+      <input type="text" value="${ln.desc||''}" placeholder="Line description" oninput="jeLines[${i}].desc=this.value" style="padding:8px 10px">
+      <input type="number" value="${ln.debit||''}" placeholder="0.00" min="0" step="0.01"
+        oninput="jeLines[${i}].debit=this.value;if(this.value)jeLines[${i}].credit='';updateJETotals()"
+        style="padding:8px 10px;text-align:right">
+      <input type="number" value="${ln.credit||''}" placeholder="0.00" min="0" step="0.01"
+        oninput="jeLines[${i}].credit=this.value;if(this.value)jeLines[${i}].debit='';updateJETotals()"
+        style="padding:8px 10px;text-align:right">
+      <div class="del-line" onclick="removeJELine(${i})">×</div>
+    </div>
+  `).join('');
+  updateJETotals();
+}
+
+function updateJETotals(){
+  const dr=jeLines.reduce((s,l)=>s+(+l.debit||0),0);
+  const cr=jeLines.reduce((s,l)=>s+(+l.credit||0),0);
+  document.getElementById('jeTotalDr').textContent=peso(dr);
+  document.getElementById('jeTotalCr').textContent=peso(cr);
+  const balanced=Math.abs(dr-cr)<0.001;
+  document.getElementById('jeTotals').querySelector('#jeTotalDr').parentElement;
+  document.getElementById('jeTotals').style.borderTopColor=balanced?'var(--green)':'var(--red)';
+}
+
+function saveJournalEntry(){
+  const date=document.getElementById('je_date').value;
+  const ref=document.getElementById('je_ref').value.trim();
+  const desc=document.getElementById('je_desc').value.trim();
+  if(!date||!ref)return toast('Date and reference required','error');
+  const validLines=jeLines.filter(l=>l.accountId&&(+l.debit||+l.credit));
+  if(validLines.length<2)return toast('Need at least 2 valid lines','error');
+  const dr=validLines.reduce((s,l)=>s+(+l.debit||0),0);
+  const cr=validLines.reduce((s,l)=>s+(+l.credit||0),0);
+  if(Math.abs(dr-cr)>0.01)return toast('Entry not balanced! Debits must equal Credits','error');
+  const entry={id:editingJE||newId(),date,ref,desc,lines:validLines};
+  if(editingJE){
+    const idx=journalEntries.findIndex(j=>j.id===editingJE);
+    if(idx>=0)journalEntries[idx]=entry;
+  } else {
+    journalEntries.push(entry);
+  }
+  save();
+  closeModal('journalModal');
+  toast(editingJE?'Entry updated':'Entry posted');
+  renderJournal();
+}
+
+function deleteJE(id){
+  if(!confirm('Delete this journal entry?'))return;
+  journalEntries=journalEntries.filter(j=>j.id!==id);
+  save();renderJournal();toast('Entry deleted');
+}
+
+function renderJournal(search=''){
+  const s=search.toLowerCase();
+  const filtered=journalEntries.filter(j=>!s||j.ref?.toLowerCase().includes(s)||j.desc?.toLowerCase().includes(s)||j.lines?.some(l=>acctName(l.accountId).toLowerCase().includes(s)));
+  const sorted=[...filtered].sort((a,b)=>b.date.localeCompare(a.date));
+  if(sorted.length===0){
+    document.getElementById('journalTable').innerHTML=`<div class="empty"><div class="icon">📔</div><p>No journal entries yet. Click "+ New Entry" to post one.</p></div>`;return;
+  }
+  let rows='';
+  sorted.forEach(je=>{
+    const drTotal=je.lines.reduce((s,l)=>s+(+l.debit||0),0);
+    je.lines.forEach((ln,i)=>{
+      rows+=`<tr>
+        ${i===0?`<td rowspan="${je.lines.length}" style="border-right:2px solid var(--blue);vertical-align:top;padding-top:10px">${fmtDate(je.date)}</td>
+        <td rowspan="${je.lines.length}" style="border-right:1px solid var(--border);vertical-align:top;padding-top:10px"><span class="badge badge-blue">${je.ref}</span></td>
+        <td rowspan="${je.lines.length}" style="border-right:1px solid var(--border);vertical-align:top;padding-top:10px;color:var(--text-soft);font-size:12px">${je.desc}</td>`:''}
+        <td style="${+ln.credit?'padding-left:32px':''}">${acctName(ln.accountId)}</td>
+        <td class="td-right dr">${+ln.debit?peso(ln.debit):''}</td>
+        <td class="td-right cr">${+ln.credit?peso(ln.credit):''}</td>
+        ${i===0?`<td rowspan="${je.lines.length}" class="td-center" style="white-space:nowrap">
+          <button class="btn-icon edit" title="Edit" onclick="openJournalModal(${je.id})">✏️</button>
+          <button class="btn-icon" title="Delete" onclick="deleteJE(${je.id})">🗑️</button>
+        </td>`:''}
+      </tr>`;
+    });
+    rows+=`<tr style="height:4px;background:var(--gray-light)"><td colspan="7"></td></tr>`;
+  });
+  document.getElementById('journalTable').innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Ref</th><th>Memo</th><th>Account</th><th class="td-right">Debit (Dr)</th><th class="td-right">Credit (Cr)</th><th></th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+// ===================== GENERAL LEDGER =====================
+function renderLedger(){
+  populateAccountSelects();
+  const filterVal=document.getElementById('ledgerFilter')?.value;
+  const accountsToShow=filterVal?accounts.filter(a=>a.id==filterVal):accounts;
+  const postings=getAllPostings();
+  let html='';
+  accountsToShow.sort((a,b)=>a.code.localeCompare(b.code)).forEach(acct=>{
+    const ap=postings.filter(p=>p.accountId==acct.id).sort((a,b)=>a.date.localeCompare(b.date));
+    if(ap.length===0&&!filterVal)return;
+    const drTotal=ap.reduce((s,p)=>s+p.debit,0);
+    const crTotal=ap.reduce((s,p)=>s+p.credit,0);
+    const balance=acct.normal==='debit'?drTotal-crTotal:crTotal-drTotal;
+    const drEntries=ap.filter(p=>p.debit>0);
+    const crEntries=ap.filter(p=>p.credit>0);
+    html+=`<div class="ledger-account">
+      <div class="ledger-account-header">
+        <span>${acct.code} – ${acct.name}</span>
+        <span style="font-size:12px;opacity:.85">Normal Balance: ${acct.normal==='debit'?'Debit (Dr)':'Credit (Cr)'}</span>
+      </div>
+      <div class="ledger-cols">
+        <div class="ledger-side" style="border-right:2px solid var(--blue)">
+          <div class="ledger-side-header">Debit (Dr)</div>
+          ${drEntries.length?drEntries.map(p=>`<div class="ledger-entry">
+            <span style="color:var(--gray)">${fmtDate(p.date)}</span>
+            <span>${p.desc}</span>
+            <span class="dr">${peso(p.debit)}</span>
+          </div>`).join(''):`<div class="ledger-entry" style="color:var(--gray);font-style:italic"><span colspan="3">—</span></div>`}
+        </div>
+        <div class="ledger-side">
+          <div class="ledger-side-header">Credit (Cr)</div>
+          ${crEntries.length?crEntries.map(p=>`<div class="ledger-entry">
+            <span style="color:var(--gray)">${fmtDate(p.date)}</span>
+            <span>${p.desc}</span>
+            <span class="cr">${peso(p.credit)}</span>
+          </div>`).join(''):`<div class="ledger-entry" style="color:var(--gray);font-style:italic"><span colspan="3">—</span></div>`}
+        </div>
+      </div>
+      <div class="ledger-balance">
+        <span>Total Dr: <strong>${peso(drTotal)}</strong> &nbsp;|&nbsp; Total Cr: <strong>${peso(crTotal)}</strong></span>
+        <span style="color:${balance>=0?'var(--blue)':'var(--red)'}">Balance: ${peso(Math.abs(balance))} ${acct.normal==='debit'?(balance>=0?'Dr':'Cr'):(balance>=0?'Cr':'Dr')}</span>
+      </div>
+    </div>`;
+  });
+  document.getElementById('ledgerContent').innerHTML=html||`<div class="empty"><div class="icon">📒</div><p>No ledger entries found.</p></div>`;
+}
+
+// ===================== CASH RECEIPTS JOURNAL =====================
+function openCRJModal(){
+  document.getElementById('crj_date').value=today();
+  document.getElementById('crj_ref').value=autoRef('OR',crjEntries);
+  document.getElementById('crj_from').value='';
+  document.getElementById('crj_amount').value='';
+  document.getElementById('crj_desc').value='';
+  populateAccountSelects();
+  // Defaults: Debit = Cash on Hand, Credit = Service Revenue – Repair
+  const cashId=accounts.find(a=>a.code==='1000')?.id;
+  const revId=accounts.find(a=>a.code==='4010')?.id;
+  document.getElementById('crj_debit').value=cashId||'';
+  document.getElementById('crj_credit').value=revId||'';
+  openModal('crjModal');
+}
+
+function saveCRJ(){
+  const date=document.getElementById('crj_date').value;
+  const ref=document.getElementById('crj_ref').value.trim();
+  const from=document.getElementById('crj_from').value.trim();
+  const amount=+document.getElementById('crj_amount').value;
+  const debitId=+document.getElementById('crj_debit').value;
+  const creditId=+document.getElementById('crj_credit').value;
+  const desc=document.getElementById('crj_desc').value.trim();
+  if(!date||!amount||!debitId||!creditId)return toast('Fill all required fields','error');
+  crjEntries.push({id:newId(),date,ref,from,amount,debitId,creditId,desc});
+  save();closeModal('crjModal');renderCRJ();toast('Receipt recorded');
+}
+
+function deleteCRJ(id){
+  if(!confirm('Delete this receipt?'))return;
+  crjEntries=crjEntries.filter(r=>r.id!==id);
+  save();renderCRJ();toast('Deleted');
+}
+
+function renderCRJ(){
+  if(crjEntries.length===0){
+    document.getElementById('crjTable').innerHTML=`<div class="empty"><div class="icon">💵</div><p>No receipts recorded yet.</p></div>`;return;
+  }
+  const sorted=[...crjEntries].sort((a,b)=>b.date.localeCompare(a.date));
+  const total=sorted.reduce((s,r)=>s+(+r.amount),0);
+  document.getElementById('crjTable').innerHTML=`<table>
+    <thead><tr><th>Date</th><th>OR No.</th><th>Received From</th><th>Description</th><th>Debit Account</th><th>Credit Account</th><th class="td-right">Amount</th><th></th></tr></thead>
+    <tbody>${sorted.map(r=>`<tr>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="badge badge-green">${r.ref||'—'}</span></td>
+      <td>${r.from||'—'}</td>
+      <td style="font-size:12px;color:var(--text-soft)">${r.desc||'—'}</td>
+      <td><span class="badge badge-blue">${acctName(r.debitId)}</span></td>
+      <td><span class="badge badge-gray">${acctName(r.creditId)}</span></td>
+      <td class="td-right dr">${peso(r.amount)}</td>
+      <td class="td-center"><button class="btn-icon" onclick="deleteCRJ(${r.id})">🗑️</button></td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="6"><strong>Total Receipts</strong></td><td class="td-right">${peso(total)}</td><td></td></tr></tfoot>
+  </table>`;
+}
+
+// ===================== CASH DISBURSEMENTS =====================
+function openCDJModal(){
+  document.getElementById('cdj_date').value=today();
+  document.getElementById('cdj_ref').value=autoRef('CV',cdjEntries);
+  document.getElementById('cdj_to').value='';
+  document.getElementById('cdj_amount').value='';
+  document.getElementById('cdj_desc').value='';
+  populateAccountSelects();
+  const cashId=accounts.find(a=>a.code==='1000')?.id;
+  const expId=accounts.find(a=>a.code==='5800')?.id;
+  document.getElementById('cdj_debit').value=expId||'';
+  document.getElementById('cdj_credit').value=cashId||'';
+  openModal('cdjModal');
+}
+
+function saveCDJ(){
+  const date=document.getElementById('cdj_date').value;
+  const ref=document.getElementById('cdj_ref').value.trim();
+  const to=document.getElementById('cdj_to').value.trim();
+  const amount=+document.getElementById('cdj_amount').value;
+  const debitId=+document.getElementById('cdj_debit').value;
+  const creditId=+document.getElementById('cdj_credit').value;
+  const desc=document.getElementById('cdj_desc').value.trim();
+  if(!date||!amount||!debitId||!creditId)return toast('Fill all required fields','error');
+  cdjEntries.push({id:newId(),date,ref,to,amount,debitId,creditId,desc});
+  save();closeModal('cdjModal');renderCDJ();toast('Payment recorded');
+}
+
+function deleteCDJ(id){
+  if(!confirm('Delete this disbursement?'))return;
+  cdjEntries=cdjEntries.filter(r=>r.id!==id);
+  save();renderCDJ();toast('Deleted');
+}
+
+function renderCDJ(){
+  if(cdjEntries.length===0){
+    document.getElementById('cdjTable').innerHTML=`<div class="empty"><div class="icon">💸</div><p>No disbursements recorded yet.</p></div>`;return;
+  }
+  const sorted=[...cdjEntries].sort((a,b)=>b.date.localeCompare(a.date));
+  const total=sorted.reduce((s,r)=>s+(+r.amount),0);
+  document.getElementById('cdjTable').innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Voucher No.</th><th>Paid To</th><th>Description</th><th>Debit Account</th><th>Credit Account</th><th class="td-right">Amount</th><th></th></tr></thead>
+    <tbody>${sorted.map(r=>`<tr>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="badge badge-red">${r.ref||'—'}</span></td>
+      <td>${r.to||'—'}</td>
+      <td style="font-size:12px;color:var(--text-soft)">${r.desc||'—'}</td>
+      <td><span class="badge badge-amber">${acctName(r.debitId)}</span></td>
+      <td><span class="badge badge-gray">${acctName(r.creditId)}</span></td>
+      <td class="td-right" style="color:var(--red)">${peso(r.amount)}</td>
+      <td class="td-center"><button class="btn-icon" onclick="deleteCDJ(${r.id})">🗑️</button></td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="6"><strong>Total Disbursements</strong></td><td class="td-right">${peso(total)}</td><td></td></tr></tfoot>
+  </table>`;
+}
+
+// ===================== SALES JOURNAL =====================
+const SJ_SERVICE_MAP={
+  installation:{code:'4000',debitType:'cash'},
+  repair:{code:'4010',debitType:'cash'},
+  cleaning:{code:'4020',debitType:'cash'},
+  refrigeration:{code:'4030',debitType:'cash'},
+  parts:{code:'4040',debitType:'cash'},
+  other:{code:'4050',debitType:'cash'},
+};
+const SJ_PAYMENT_MAP={
+  cash:'1000',bank:'1010',gcash:'1010',credit:'1100'
+};
+
+function openSJModal(){
+  document.getElementById('sj_date').value=today();
+  document.getElementById('sj_ref').value=autoRef('INV',sjEntries);
+  document.getElementById('sj_customer').value='';
+  document.getElementById('sj_amount').value='';
+  document.getElementById('sj_desc').value='';
+  openModal('sjModal');
+}
+
+function saveSJ(){
+  const date=document.getElementById('sj_date').value;
+  const ref=document.getElementById('sj_ref').value.trim();
+  const customer=document.getElementById('sj_customer').value.trim();
+  const amount=+document.getElementById('sj_amount').value;
+  const type=document.getElementById('sj_type').value;
+  const payment=document.getElementById('sj_payment').value;
+  const desc=document.getElementById('sj_desc').value.trim();
+  if(!date||!amount||!customer)return toast('Fill all required fields','error');
+  const svcMap=SJ_SERVICE_MAP[type]||SJ_SERVICE_MAP.other;
+  const debitAcct=accounts.find(a=>a.code===SJ_PAYMENT_MAP[payment]);
+  const creditAcct=accounts.find(a=>a.code===svcMap.code);
+  if(!debitAcct||!creditAcct)return toast('Account mapping error','error');
+  sjEntries.push({id:newId(),date,ref,customer,type,amount,payment,desc,debitId:debitAcct.id,creditId:creditAcct.id});
+  save();closeModal('sjModal');renderSJ();toast('Sale posted');
+}
+
+function deleteSJ(id){
+  if(!confirm('Delete this sale?'))return;
+  sjEntries=sjEntries.filter(r=>r.id!==id);
+  save();renderSJ();toast('Deleted');
+}
+
+const SJ_LABELS={installation:'Installation',repair:'Repair',cleaning:'Cleaning/PM',refrigeration:'Refrigeration',parts:'Parts Sale',other:'Other'};
+const PAY_LABELS={cash:'Cash',bank:'Bank',gcash:'GCash',credit:'On Credit'};
+
+function renderSJ(){
+  if(sjEntries.length===0){
+    document.getElementById('sjTable').innerHTML=`<div class="empty"><div class="icon">🧾</div><p>No sales recorded yet.</p></div>`;return;
+  }
+  const sorted=[...sjEntries].sort((a,b)=>b.date.localeCompare(a.date));
+  const total=sorted.reduce((s,r)=>s+(+r.amount),0);
+  document.getElementById('sjTable').innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Service</th><th>Payment</th><th>Description</th><th class="td-right">Amount</th><th></th></tr></thead>
+    <tbody>${sorted.map(r=>`<tr>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="badge badge-blue">${r.ref||'—'}</span></td>
+      <td><strong>${r.customer}</strong></td>
+      <td><span class="badge badge-green">${SJ_LABELS[r.type]||r.type}</span></td>
+      <td><span class="badge badge-${r.payment==='credit'?'amber':'gray'}">${PAY_LABELS[r.payment]||r.payment}</span></td>
+      <td style="font-size:12px;color:var(--text-soft)">${r.desc||'—'}</td>
+      <td class="td-right cr">${peso(r.amount)}</td>
+      <td class="td-center"><button class="btn-icon" onclick="deleteSJ(${r.id})">🗑️</button></td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="6"><strong>Total Sales</strong></td><td class="td-right">${peso(total)}</td><td></td></tr></tfoot>
+  </table>`;
+}
+
+// ===================== PURCHASE JOURNAL =====================
+const PJ_TYPE_MAP={parts:'1200',equipment:'1500',supplies:'5500',fuel:'5400',utilities:'5300',other:'5800'};
+const PJ_PAYMENT_MAP={cash:'1000',bank:'1010',credit:'2000'};
+
+function openPJModal(){
+  document.getElementById('pj_date').value=today();
+  document.getElementById('pj_ref').value=autoRef('PV',pjEntries);
+  document.getElementById('pj_supplier').value='';
+  document.getElementById('pj_amount').value='';
+  document.getElementById('pj_desc').value='';
+  openModal('pjModal');
+}
+
+function savePJ(){
+  const date=document.getElementById('pj_date').value;
+  const ref=document.getElementById('pj_ref').value.trim();
+  const supplier=document.getElementById('pj_supplier').value.trim();
+  const amount=+document.getElementById('pj_amount').value;
+  const type=document.getElementById('pj_type').value;
+  const payment=document.getElementById('pj_payment').value;
+  const desc=document.getElementById('pj_desc').value.trim();
+  if(!date||!amount||!supplier)return toast('Fill all required fields','error');
+  const debitAcct=accounts.find(a=>a.code===PJ_TYPE_MAP[type]);
+  const creditAcct=accounts.find(a=>a.code===PJ_PAYMENT_MAP[payment]);
+  if(!debitAcct||!creditAcct)return toast('Account mapping error','error');
+  pjEntries.push({id:newId(),date,ref,supplier,type,amount,payment,desc,debitId:debitAcct.id,creditId:creditAcct.id});
+  save();closeModal('pjModal');renderPJ();toast('Purchase posted');
+}
+
+function deletePJ(id){
+  if(!confirm('Delete this purchase?'))return;
+  pjEntries=pjEntries.filter(r=>r.id!==id);
+  save();renderPJ();toast('Deleted');
+}
+
+const PJ_LABELS={parts:'Parts & Materials',equipment:'Tools & Equipment',supplies:'Supplies',fuel:'Fuel/Transport',utilities:'Utilities',other:'Other'};
+
+function renderPJ(){
+  if(pjEntries.length===0){
+    document.getElementById('pjTable').innerHTML=`<div class="empty"><div class="icon">🛒</div><p>No purchases recorded yet.</p></div>`;return;
+  }
+  const sorted=[...pjEntries].sort((a,b)=>b.date.localeCompare(a.date));
+  const total=sorted.reduce((s,r)=>s+(+r.amount),0);
+  document.getElementById('pjTable').innerHTML=`<table>
+    <thead><tr><th>Date</th><th>Ref No.</th><th>Supplier</th><th>Category</th><th>Payment</th><th>Description</th><th class="td-right">Amount</th><th></th></tr></thead>
+    <tbody>${sorted.map(r=>`<tr>
+      <td>${fmtDate(r.date)}</td>
+      <td><span class="badge badge-amber">${r.ref||'—'}</span></td>
+      <td><strong>${r.supplier}</strong></td>
+      <td><span class="badge badge-gray">${PJ_LABELS[r.type]||r.type}</span></td>
+      <td><span class="badge badge-${r.payment==='credit'?'amber':'blue'}">${PAY_LABELS[r.payment]||r.payment}</span></td>
+      <td style="font-size:12px;color:var(--text-soft)">${r.desc||'—'}</td>
+      <td class="td-right" style="color:var(--red)">${peso(r.amount)}</td>
+      <td class="td-center"><button class="btn-icon" onclick="deletePJ(${r.id})">🗑️</button></td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr><td colspan="6"><strong>Total Purchases</strong></td><td class="td-right">${peso(total)}</td><td></td></tr></tfoot>
+  </table>`;
+}
+
+// ===================== TRIAL BALANCE =====================
+function renderTrialBalance(){
+  const groups={asset:'Assets',liability:'Liabilities',equity:'Equity',income:'Income / Revenue',expense:'Expenses'};
+  let totalDr=0,totalCr=0;
+  let rows='';
+  Object.entries(groups).forEach(([type,label])=>{
+    const group=accounts.filter(a=>a.type===type).sort((a,b)=>a.code.localeCompare(b.code));
+    let groupHasData=false;
+    let groupRows='';
+    group.forEach(acct=>{
+      const b=getAccountBalance(acct.id);
+      if(Math.abs(b.dr)+Math.abs(b.cr)<0.001)return;
+      groupHasData=true;
+      totalDr+=b.dr;totalCr+=b.cr;
+      groupRows+=`<tr>
+        <td><span class="badge badge-gray">${acct.code}</span></td>
+        <td>${acct.name}</td>
+        <td class="td-right dr">${b.dr?peso(b.dr):''}</td>
+        <td class="td-right cr">${b.cr?peso(b.cr):''}</td>
+      </tr>`;
+    });
+    if(groupHasData){
+      rows+=`<tr><td colspan="4" class="tb-section">${label}</td></tr>${groupRows}`;
+    }
+  });
+  const balanced=Math.abs(totalDr-totalCr)<0.01;
+  document.getElementById('tbTable').innerHTML=`<table>
+    <thead><tr>
+      <th style="width:90px">Code</th>
+      <th>Account Name</th>
+      <th class="td-right" style="width:160px">Debit (Dr)</th>
+      <th class="td-right" style="width:160px">Credit (Cr)</th>
+    </tr></thead>
+    <tbody>${rows||`<tr><td colspan="4" class="empty" style="text-align:center;padding:30px;color:var(--gray)">No transactions posted yet.</td></tr>`}</tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2" style="font-weight:800">TOTALS ${balanced?'<span style="color:var(--green);font-size:11px">(✓ Balanced)</span>':'<span style="color:var(--red);font-size:11px">(✗ Unbalanced!)</span>'}</td>
+        <td class="td-right" style="font-weight:800">${peso(totalDr)}</td>
+        <td class="td-right" style="font-weight:800">${peso(totalCr)}</td>
+      </tr>
+    </tfoot>
+  </table>`;
+}
+
+// ===================== FINANCIAL REPORTS =====================
+function renderReports(){
+  const now=new Date().toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('isDate').textContent=now;
+  document.getElementById('bsDate').textContent=now;
+
+  // --- INCOME STATEMENT ---
+  const incomeAccts=accounts.filter(a=>a.type==='income').sort((a,b)=>a.code.localeCompare(b.code));
+  const expenseAccts=accounts.filter(a=>a.type==='expense').sort((a,b)=>a.code.localeCompare(b.code));
+  let totalRevenue=0,totalExpenses=0;
+  let isHtml=`<div class="report-section">
+    <h4>REVENUES <span style="color:var(--gray);font-weight:400;font-size:11px">Service Income</span></h4>`;
+  incomeAccts.forEach(a=>{
+    const b=getAccountBalance(a.id);
+    if(Math.abs(b.balance)<0.001)return;
+    totalRevenue+=b.balance;
+    isHtml+=`<div class="report-row indent"><span>${a.code} – ${a.name}</span><span>${peso(b.balance)}</span></div>`;
+  });
+  isHtml+=`<div class="report-row subtotal"><span>Total Revenues</span><span>${peso(totalRevenue)}</span></div>`;
+  isHtml+=`</div><div class="report-section"><h4>EXPENSES <span style="color:var(--gray);font-weight:400;font-size:11px">Operating Costs</span></h4>`;
+  expenseAccts.forEach(a=>{
+    const b=getAccountBalance(a.id);
+    if(Math.abs(b.balance)<0.001)return;
+    totalExpenses+=b.balance;
+    isHtml+=`<div class="report-row indent"><span>${a.code} – ${a.name}</span><span>${peso(b.balance)}</span></div>`;
+  });
+  isHtml+=`<div class="report-row subtotal"><span>Total Expenses</span><span>${peso(totalExpenses)}</span></div></div>`;
+  const netIncome=totalRevenue-totalExpenses;
+  isHtml+=`<div class="report-row ${netIncome>=0?'net-income':'net-loss'}">
+    <span>${netIncome>=0?'NET INCOME':'NET LOSS'}</span>
+    <span>${peso(Math.abs(netIncome))}</span>
+  </div>`;
+  document.getElementById('incomeStatement').innerHTML=isHtml;
+
+  // --- BALANCE SHEET ---
+  const assetAccts=accounts.filter(a=>a.type==='asset').sort((a,b)=>a.code.localeCompare(b.code));
+  const liabilityAccts=accounts.filter(a=>a.type==='liability').sort((a,b)=>a.code.localeCompare(b.code));
+  const equityAccts=accounts.filter(a=>a.type==='equity').sort((a,b)=>a.code.localeCompare(b.code));
+  let totalAssets=0,totalLiabilities=0,totalEquity=0;
+  let bsHtml=`<div class="report-section"><h4>ASSETS</h4>`;
+  assetAccts.forEach(a=>{
+    const b=getAccountBalance(a.id);
+    if(Math.abs(b.balance)<0.001)return;
+    totalAssets+=b.balance;
+    bsHtml+=`<div class="report-row indent"><span>${a.code} – ${a.name}</span><span>${peso(b.balance)}</span></div>`;
+  });
+  bsHtml+=`<div class="report-row subtotal"><span>Total Assets</span><span>${peso(totalAssets)}</span></div></div>`;
+  bsHtml+=`<div class="report-section"><h4>LIABILITIES</h4>`;
+  liabilityAccts.forEach(a=>{
+    const b=getAccountBalance(a.id);
+    if(Math.abs(b.balance)<0.001)return;
+    totalLiabilities+=b.balance;
+    bsHtml+=`<div class="report-row indent"><span>${a.code} – ${a.name}</span><span>${peso(b.balance)}</span></div>`;
+  });
+  bsHtml+=`<div class="report-row subtotal"><span>Total Liabilities</span><span>${peso(totalLiabilities)}</span></div></div>`;
+  bsHtml+=`<div class="report-section"><h4>OWNER'S EQUITY</h4>`;
+  equityAccts.forEach(a=>{
+    const b=getAccountBalance(a.id);
+    if(Math.abs(b.balance)<0.001)return;
+    totalEquity+=b.balance;
+    bsHtml+=`<div class="report-row indent"><span>${a.code} – ${a.name}</span><span>${peso(b.balance)}</span></div>`;
+  });
+  // Add net income to equity
+  if(Math.abs(netIncome)>0.001){
+    totalEquity+=netIncome;
+    bsHtml+=`<div class="report-row indent"><span>Current Net Income</span><span>${peso(netIncome)}</span></div>`;
+  }
+  bsHtml+=`<div class="report-row subtotal"><span>Total Equity</span><span>${peso(totalEquity)}</span></div></div>`;
+  const le=totalLiabilities+totalEquity;
+  const balanced=Math.abs(totalAssets-le)<0.01;
+  bsHtml+=`<div class="report-row total"><span>Total Liabilities + Equity</span><span>${peso(le)}</span></div>`;
+  if(!balanced&&(totalAssets+le>0)){
+    bsHtml+=`<div class="report-row" style="background:var(--red-light);color:var(--red);font-size:11px;padding:8px 12px">⚠️ Balance Sheet is unbalanced. Check your entries.</div>`;
+  }
+  document.getElementById('balanceSheet').innerHTML=bsHtml;
+}
+
+// ===================== CHART OF ACCOUNTS =====================
+let editingCOA=null;
+function openCOAModal(id=null){
+  editingCOA=id;
+  document.getElementById('coaModalTitle').textContent=id?'Edit Account':'Add Account';
+  if(id){
+    const a=accounts.find(ac=>ac.id===id);
+    if(a){
+      document.getElementById('coa_code').value=a.code;
+      document.getElementById('coa_name').value=a.name;
+      document.getElementById('coa_type').value=a.type;
+      document.getElementById('coa_normal').value=a.normal;
+    }
+  } else {
+    document.getElementById('coa_code').value='';
+    document.getElementById('coa_name').value='';
+    document.getElementById('coa_type').value='asset';
+    document.getElementById('coa_normal').value='debit';
+  }
+  openModal('coaModal');
+}
+
+function saveCOA(){
+  const code=document.getElementById('coa_code').value.trim();
+  const name=document.getElementById('coa_name').value.trim();
+  const type=document.getElementById('coa_type').value;
+  const normal=document.getElementById('coa_normal').value;
+  if(!code||!name)return toast('Code and name required','error');
+  if(!editingCOA&&accounts.find(a=>a.code===code))return toast('Account code already exists','error');
+  if(editingCOA){
+    const idx=accounts.findIndex(a=>a.id===editingCOA);
+    if(idx>=0)accounts[idx]={...accounts[idx],code,name,type,normal};
+  } else {
+    accounts.push({id:newId(),code,name,type,normal});
+  }
+  save();closeModal('coaModal');renderCOA();populateAccountSelects();toast(editingCOA?'Account updated':'Account added');
+}
+
+function deleteCOA(id){
+  const postings=getAllPostings();
+  if(postings.some(p=>p.accountId==id))return toast('Cannot delete account with transactions','error');
+  if(!confirm('Delete this account?'))return;
+  accounts=accounts.filter(a=>a.id!==id);
+  save();renderCOA();toast('Account deleted');
+}
+
+function renderCOA(){
+  const typeOrder=['asset','liability','equity','income','expense'];
+  const typeLabels={asset:'⬡ Assets (1000s)',liability:'⬡ Liabilities (2000s)',equity:'⬡ Equity (3000s)',income:'⬡ Income / Revenue (4000s)',expense:'⬡ Expenses (5000s)'};
+  let html='';
+  typeOrder.forEach(type=>{
+    const group=accounts.filter(a=>a.type===type).sort((a,b)=>a.code.localeCompare(b.code));
+    if(group.length===0)return;
+    html+=`<div class="coa-group">
+      <div class="coa-group-header">${typeLabels[type]}<span style="font-size:12px;font-weight:400">${group.length} accounts</span></div>
+      ${group.map(a=>`<div class="coa-row">
+        <span><strong>${a.code}</strong></span>
+        <span>${a.name}</span>
+        <span><span class="badge badge-${type==='asset'?'blue':type==='liability'?'red':type==='equity'?'amber':type==='income'?'green':'gray'}">${type}</span></span>
+        <span style="font-size:12px;color:var(--gray)">${a.normal==='debit'?'↑ Dr':'↑ Cr'}</span>
+        <span style="display:flex;gap:6px">
+          <button class="btn-icon edit" onclick="openCOAModal(${a.id})">✏️</button>
+          <button class="btn-icon" onclick="deleteCOA(${a.id})">🗑️</button>
+        </span>
+      </div>`).join('')}
+    </div>`;
+  });
+  document.getElementById('coaContent').innerHTML=html;
+}
+
+// ===================== INIT =====================
+document.getElementById('headerDate').innerHTML=`<div>${new Date().toLocaleDateString('en-PH',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div><div style="margin-top:2px">Fiscal Year ${new Date().getFullYear()}</div>`;
+renderDashboard();
+</script>
+</body>
+</html>
