@@ -752,7 +752,7 @@ function showReceipt(txn){
 
 const RESTOCK_TARGET=20;
 let restockOpen=true;
-let restockBodyH=null;
+let restockBodyH=120;
 
 function toggleRestock(){
   restockOpen=!restockOpen;
@@ -783,7 +783,7 @@ function renderRestockAlert(){
       <button class="restock-del" onclick="delFromRestock(${p.id})" title="Delete product">🗑️</button>
     </div>`;
   }).join('');
-  const bodyH=restockBodyH?`max-height:${restockBodyH}px;overflow-y:auto;`:'';
+  const bodyH=restockBodyH?`height:${restockBodyH}px;max-height:${restockBodyH}px;overflow-y:auto;`:'';
   el.innerHTML=`<div class="restock-wrap">
     <div class="restock-head" onclick="toggleRestock()">
       <div class="restock-title">
@@ -815,6 +815,7 @@ function startRestockDrag(e){
   function onMove(ev){
     const dy=ev.clientY-startY;
     restockBodyH=Math.max(60,startH+dy);
+    body.style.height=restockBodyH+'px';
     body.style.maxHeight=restockBodyH+'px';
     body.style.overflowY='auto';
   }
