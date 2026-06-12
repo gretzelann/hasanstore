@@ -140,6 +140,8 @@
   .restock-chevron{color:#8a5c00;font-size:12px;transition:transform .2s;}
   .restock-body{background:#fffdf0;border-top:1px solid #f0dc80;overflow-y:auto;}
   .restock-item{display:flex;align-items:center;padding:9px 16px;border-bottom:1px solid #f5ecb0;gap:10px;}
+  .restock-del{background:none;border:none;cursor:pointer;font-size:15px;padding:2px 4px;opacity:.6;border-radius:4px;line-height:1;}
+  .restock-del:hover{opacity:1;background:#fee2e2;}
   .restock-item:last-child{border-bottom:none;}
   .restock-info{flex:1;min-width:0;}
   .restock-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -778,6 +780,7 @@ function renderRestockAlert(){
       </div>
       ${badge}
       <div class="restock-suggest">Buy ${suggest}</div>
+      <button class="restock-del" onclick="delFromRestock(${p.id})" title="Delete product">🗑️</button>
     </div>`;
   }).join('');
   const bodyH=restockBodyH?`max-height:${restockBodyH}px;overflow-y:auto;`:'';
@@ -792,6 +795,13 @@ function renderRestockAlert(){
     <div class="restock-body" id="rb" style="display:${restockOpen?'block':'none'};${bodyH}">${rows}</div>
     <div class="restock-drag-handle" id="rdh" style="display:${restockOpen?'flex':'none'};" onmousedown="startRestockDrag(event)"></div>
   </div>`;
+}
+
+function delFromRestock(id){
+  if(!confirm('Delete this product from inventory?'))return;
+  products=products.filter(x=>x.id!==id);
+  sv('hs_products',products);
+  renderInv();
 }
 
 function startRestockDrag(e){
