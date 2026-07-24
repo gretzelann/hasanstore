@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { MessageThread } from "@/components/MessageThread";
 import { MessageComposer } from "@/components/MessageComposer";
 import { LivePoll } from "@/components/LivePoll";
+import { displayName } from "@/lib/channel-display";
 
 export default async function ChannelPage({ params }: { params: Promise<{ channelId: string }> }) {
   const { channelId } = await params;
@@ -11,7 +12,11 @@ export default async function ChannelPage({ params }: { params: Promise<{ channe
 
   const membership = await prisma.channelMember.findUnique({
     where: { channelId_userId: { channelId, userId: session.userId } },
-    include: { channel: true },
+    include: {
+      channel: {
+        include: { members: { include: { user: { select: { id: true, name: true } } } } },
+      },
+    },
   });
   if (!membership) notFound();
 
@@ -39,7 +44,9 @@ export default async function ChannelPage({ params }: { params: Promise<{ channe
       <LivePoll />
       <header className="border-b border-[var(--rule)] px-6 py-3.5 bg-[var(--surface)]">
         <h2 className="text-sm font-semibold text-[var(--ink)]">
-          {membership.channel.type === "dm" ? membership.channel.name : `#${membership.channel.name}`}
+          {membership.channel.type === "dm" || membership.channel.type === "group"
+            ? displayName(membership.channel, session.userId)
+            : `#${membership.channel.name}`}
         </h2>
       </header>
 

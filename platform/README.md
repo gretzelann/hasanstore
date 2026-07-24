@@ -10,10 +10,13 @@ client portal, gated by role.
 - **Auth** — email/password, signed session cookie (jose), role-based route
   gating both in middleware (`src/proxy.ts`) and per-page
   (`src/lib/access.ts`) — defense in depth, not just a hidden nav item.
-- **Chat** — department/project channels, DMs-ready schema, threads,
-  reactions, @mentions with notifications, unread counts. Live updates are a
-  4–6s background poll (`components/LivePoll.tsx`), a stand-in for the
-  WebSocket gateway in the architecture spec — see "Known simplifications."
+- **Chat** — department/project channels, 1:1 DMs and group chats (`/chat/new`),
+  threads, reactions, @mentions with notifications, unread counts. Live
+  updates are a 4–6s background poll (`components/LivePoll.tsx`), a stand-in
+  for the WebSocket gateway in the architecture spec — see "Known
+  simplifications."
+- **Search** (`/search`) — one box across messages, cards, projects, and
+  clients.
 - **Boards** — native Kanban per project (To Do / In Progress / Waiting on
   Client / Approved / Done), drag-and-drop via the HTML5 DnD API, card
   activity timeline, comments with a server-enforced `isInternal` flag.

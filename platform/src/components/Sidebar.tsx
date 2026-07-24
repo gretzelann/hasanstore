@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { href: "/chat", label: "Chat" },
   { href: "/projects", label: "Projects" },
   { href: "/clients", label: "Clients" },
+  { href: "/search", label: "Search" },
 ] as const;
 
 export function Sidebar({ session }: { session: SessionPayload }) {

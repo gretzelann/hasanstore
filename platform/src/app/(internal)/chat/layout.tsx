@@ -7,7 +7,11 @@ export default async function ChatLayout({ children }: { children: React.ReactNo
 
   const memberships = await prisma.channelMember.findMany({
     where: { userId: session.userId },
-    include: { channel: true },
+    include: {
+      channel: {
+        include: { members: { include: { user: { select: { id: true, name: true } } } } },
+      },
+    },
     orderBy: { channel: { name: "asc" } },
   });
 
@@ -34,7 +38,7 @@ export default async function ChatLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="flex h-screen">
-      <ChannelList groups={groups} unreadByChannel={unreadByChannel} />
+      <ChannelList groups={groups} unreadByChannel={unreadByChannel} currentUserId={session.userId} />
       <div className="flex-1 min-w-0 flex flex-col">{children}</div>
     </div>
   );
